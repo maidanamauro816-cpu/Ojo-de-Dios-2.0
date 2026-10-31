@@ -1,0 +1,50 @@
+name: Audit Ojo de Dios source ZIP
+
+on:
+  push:
+    branches: [feature/world-layers-foundation]
+    paths:
+      - '.github/workflows/audit-project.yml'
+      - 'ojo-de-dios-2.0.zip'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract original project
+        run: |
+          mkdir project
+          unzip -q ojo-de-dios-2.0.zip -d project
+          echo '=== FILE TREE ==='
+          find project -maxdepth 4 -type f | sort
+          echo '=== PACKAGE JSON ==='
+          cat project/package.json
+          echo '=== INDEX HTML ==='
+          cat project/index.html
+          echo '=== CAPACITOR CONFIG ==='
+          cat project/capacitor.config.ts
+          echo '=== MAIN TYPESCRIPT ==='
+          cat project/src/main.ts
+          echo '=== CAMERA MODULE ==='
+          cat project/src/cameras.ts
+          echo '=== APP STYLES ==='
+          cat project/src/style.css
+          echo '=== PROJECT README ==='
+          cat project/README.md
+          echo '=== METADATA ==='
+          cat project/metadata.json
+
+      - name: Preserve extracted source for integration work
+        uses: actions/upload-artifact@v4
+        with:
+          name: ojo-de-dios-source-audit
+          path: |
+            project/
+          if-no-files-found: error
+          retention-days: 7
