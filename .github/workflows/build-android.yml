@@ -1,0 +1,71 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'ojo-de-dios-2.0.zip'
+      - '.github/workflows/build-android.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: ''
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Extract project ZIP
+        run: |
+          test -f ojo-de-dios-2.0.zip
+          mkdir project
+          unzip -q ojo-de-dios-2.0.zip -d project
+          test -f project/package.json
+          test -f project/capacitor.config.ts
+          echo "Project files:"
+          find project -maxdepth 3 -type f | sort
+
+      - name: Install dependencies
+        working-directory: project
+        run: npm install --no-audit --no-fund
+
+      - name: Build web assets
+        working-directory: project
+        run: npm run build
+
+      - name: Prepare Android project
+        working-directory: project
+        run: |
+          if [ ! -d android ]; then
+            npx cap add android
+          fi
+          npx cap sync android
+
+      - name: Build debug APK
+        working-directory: project/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ojo-de-dios-2.0-debug-apk
+          path: project/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
