@@ -34,7 +34,7 @@ replace_once(
     "satellite imagery basemap"
 )
 
-satellite_pattern = r"const res = await fetch\(.+?/api/satellite/.+?\);\s*if \(!res\.ok\) throw new Error\(.+?\);\s*const data = await res\.json\(\);\s*const lines = \(data\.tle \|\| ''\)\.trim\(\)\.split\(/\\\\r\?\\\\n/\);"
+satellite_pattern = r"const res = await fetch\(.+?/api/satellite/.+?\);\s*if \(!res\.ok\) throw new Error\(.+?\);\s*const data = await res\.json\(\);\s*const lines = .*?;"
 satellite_replacement = """const catalogNumber = satId === 'iss' ? '25544' : satId === 'tiangong' ? '48274' : '20580';
     const res = await fetch('https://celestrak.org/NORAD/elements/gp.php?CATNR=' + catalogNumber + '&FORMAT=TLE', { cache: 'no-store' });
     if (!res.ok) throw new Error('HTTP ' + res.status);
