@@ -3,7 +3,7 @@ name: Build Android APK
 on:
   workflow_dispatch:
   push:
-    branches: [main, feature/world-layers-foundation]
+    branches: [main, feature/world-layers-foundation, feature/gemini-ui-restoration]
     paths:
       - 'ojo-de-dios-2.0.zip'
       - 'integration/**'
@@ -46,6 +46,19 @@ jobs:
           python3 integration/patch-project.py project
           test -f project/src/world-layers.ts
           grep -q "initWorldLayers" project/src/main.ts
+
+      - name: Preserve extracted source for UI audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: ojo-de-dios-gemini-source-audit
+          path: |
+            project/index.html
+            project/src/**
+            project/package.json
+            project/vite.config.ts
+            project/capacitor.config.ts
+          if-no-files-found: error
+          retention-days: 3
 
       - name: Install dependencies
         working-directory: project
