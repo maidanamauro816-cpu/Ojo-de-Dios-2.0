@@ -133,7 +133,9 @@ if (layerToolsPanel) {
 const mainPanel = $('main-panel');
 if (mainPanel) mainPanel.hidden = true;
 
+let currentActiveLayer: string | null = null;
 function syncLayerButtons(active: string | null) {
+  currentActiveLayer = active;
   document.querySelectorAll<HTMLElement>('[data-layer]').forEach((button) => {
     const selected = button.dataset.layer === active;
     button.classList.toggle('active', selected);
@@ -145,7 +147,7 @@ function syncLayerButtons(active: string | null) {
 }
 
 function activateLayer(layer: string | null) {
-  const next = layerStates[layer || ''] ? null : layer;
+  const next = currentActiveLayer === layer ? null : layer;
   Object.values(satTrackers).forEach((tracker: any) => { if (tracker.entity) tracker.entity.show = false; });
   haarp.show = false;
   strategicEntities.forEach((entity) => entity.show = false);
