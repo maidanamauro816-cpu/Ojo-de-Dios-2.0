@@ -3,9 +3,10 @@ name: Build Android APK
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, feature/world-layers-foundation]
     paths:
       - 'ojo-de-dios-2.0.zip'
+      - 'integration/**'
       - '.github/workflows/build-android.yml'
 
 permissions:
@@ -40,6 +41,12 @@ jobs:
           echo "Project files:"
           find project -maxdepth 3 -type f | sort
 
+      - name: Apply additive world-data integrations
+        run: |
+          python3 integration/patch-project.py project
+          test -f project/src/world-layers.ts
+          grep -q "initWorldLayers" project/src/main.ts
+
       - name: Install dependencies
         working-directory: project
         run: npm install --no-audit --no-fund
@@ -65,7 +72,7 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: ojo-de-dios-2.0-debug-apk
+          name: ojo-de-dios-2.0-world-layers-debug-apk
           path: project/android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14
