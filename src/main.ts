@@ -1061,6 +1061,8 @@ document.querySelectorAll('[data-layer]').forEach((btn) => {
     } else if (layer === 'weather') {
       layerStates.weather = !layerStates.weather;
       weatherLayer.setVisible(layerStates.weather);
+      // La capa Clima muestra también el mosaico satelital global de nubosidad NASA.
+      globalWeatherLayer.setVisible('clouds', layerStates.weather);
       btn.classList.toggle('active', layerStates.weather);
       btn.querySelector('.layer-state')!.textContent = layerStates.weather ? 'ON' : 'OFF';
     } else if (layer === 'natural') {
