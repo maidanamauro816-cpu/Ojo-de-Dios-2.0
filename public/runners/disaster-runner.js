@@ -2,6 +2,7 @@ const KEY = 'ojo-dios-bg-seen-v1';
 const SETTINGS_KEY = 'ojo-dios-alert-settings-v1';
 const SOURCES = {
   quakes: 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson',
+  smn: 'https://ssl.smn.gob.ar/feeds/CAP/rss_alertaCAP_nuevo.xml',
   eonet: 'https://eonet.gsfc.nasa.gov/api/v3/events?status=open&limit=100',
   storms: 'https://www.nhc.noaa.gov/CurrentStorms.json'
 };
@@ -54,7 +55,7 @@ async function checkQuakes(seen, center, radiusKm) {
     const lon = Number(c[0]), lat = Number(c[1]), depth = Number(c[2]), mag = Number(p.mag);
     if (![lon, lat, depth, mag].every(Number.isFinite)) continue;
     const nearby = center && distanceKm(center, { latitude: lat, longitude: lon }) <= radiusKm;
-    if (mag < 5.5 && !(nearby && mag >= 3.0)) continue;
+    if (mag < 6.5 && !(nearby && mag >= 3.0)) continue;
     await alertOnce(seen, 'usgs:' + quake.id,
       '🚨 SISMO M' + mag.toFixed(1) + ' · ' + (p.place || 'Ubicación no informada'),
       'Profundidad ' + depth.toFixed(1) + ' km · ' + new Date(p.time).toLocaleString() + ' · Fuente USGS',
@@ -71,7 +72,8 @@ async function checkNaturalEvents(seen, center, radiusKm) {
     const point = [...geometry].reverse().find(g => g.type === 'Point' && Array.isArray(g.coordinates));
     const lon = point ? Number(point.coordinates[0]) : null;
     const lat = point ? Number(point.coordinates[1]) : null;
-    if (center && Number.isFinite(lat) && Number.isFinite(lon) && distanceKm(center, { latitude: lat, longitude: lon }) > radiusKm) continue;
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue;
+    if (center && distanceKm(center, { latitude: lat, longitude: lon }) > radiusKm) continue;
     const category = categories.map(c => c.title || c.id).join(', ');
     await alertOnce(seen, 'eonet:' + event.id,
       '🌍 ALERTA NATURAL · ' + (event.title || category),
@@ -79,12 +81,13 @@ async function checkNaturalEvents(seen, center, radiusKm) {
       { kind: 'natural-event', lat: Number.isFinite(lat) ? lat : null, lon: Number.isFinite(lon) ? lon : null, eventId: event.id });
   }
 }
-async function checkTropicalStorms(seen) {
+async function checkTropicalStorms(seen, center, radiusKm) {
   const data = await json(SOURCES.storms);
   for (const storm of data.activeStorms || data.active_storms || []) {
     const id = storm.id || storm.atcf || storm.name;
     if (!id) continue;
     const lat = Number(storm.latitude ?? storm.lat), lon = Number(storm.longitude ?? storm.lon);
+    if (center && Number.isFinite(lat) && Number.isFinite(lon) && distanceKm(center, { latitude: lat, longitude: lon }) > radiusKm) continue;
     await alertOnce(seen, 'noaa:' + id, '🌀 NOAA · ' + (storm.name || 'Sistema tropical activo'),
       'Sistema tropical activo. Consultá el parte oficial del Centro Nacional de Huracanes.',
       { kind: 'tropical-storm', lat: Number.isFinite(lat) ? lat : null, lon: Number.isFinite(lon) ? lon : null, eventId: String(id) });
@@ -118,6 +121,58 @@ async function checkOfficialWarnings(seen, center, radiusKm) {
   }
 }
 
+function xmlText(block, tag) {
+  const match = block.match(new RegExp('<' + tag + '(?:\\s[^>]*)?>([\\s\\S]*?)</' + tag + '>', 'i'));
+  return match ? match[1].replace(/<!\\[CDATA\\[|\\]\\]>/g, '').replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').trim() : '';
+}
+function pointInPolygon(point, polygon) {
+  const x = point.longitude, y = point.latitude;
+  let inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const xi = polygon[i].longitude, yi = polygon[i].latitude;
+    const xj = polygon[j].longitude, yj = polygon[j].latitude;
+    const crosses = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / ((yj - yi) || 1e-12) + xi);
+    if (crosses) inside = !inside;
+  }
+  return inside;
+}
+async function checkSmnWarnings(seen, center) {
+  if (!center) return;
+  const response = await fetch(SOURCES.smn, { headers: { Accept: 'application/rss+xml, application/xml, text/xml' } });
+  if (!response.ok) throw new Error('SMN CAP RSS HTTP ' + response.status);
+  const feed = await response.text();
+  const items = feed.match(/<item(?:\\s[^>]*)?>[\\s\\S]*?<\\/item>/gi) || [];
+  for (const item of items) {
+    const link = xmlText(item, 'link');
+    if (!link || !/^https?:\\/\\//i.test(link)) continue;
+    const capResponse = await fetch(link, { headers: { Accept: 'application/xml, text/xml' } });
+    if (!capResponse.ok) continue;
+    const cap = await capResponse.text();
+    const identifier = xmlText(cap, 'identifier') || link;
+    const infoBlocks = cap.match(/<info(?:\\s[^>]*)?>[\\s\\S]*?<\\/info>/gi) || [cap];
+    for (const info of infoBlocks) {
+      const areas = info.match(/<area(?:\\s[^>]*)?>[\\s\\S]*?<\\/area>/gi) || [];
+      for (const area of areas) {
+        const polygonText = xmlText(area, 'polygon');
+        const polygon = polygonText.split(/\\s+/).map(pair => {
+          const values = pair.split(',').map(Number);
+          return values.length === 2 ? { latitude: values[0], longitude: values[1] } : null;
+        }).filter(p => p && Number.isFinite(p.latitude) && Number.isFinite(p.longitude));
+        if (polygon.length < 3 || !pointInPolygon(center, polygon)) continue;
+        const event = xmlText(info, 'event') || 'Alerta meteorológica';
+        const headline = xmlText(info, 'headline') || event;
+        const description = xmlText(info, 'description') || xmlText(info, 'instruction') || 'Consultá las recomendaciones oficiales.';
+        const severity = xmlText(info, 'severity');
+        const sent = xmlText(cap, 'sent');
+        await alertOnce(seen, 'smn:' + identifier + ':' + event + ':' + sent,
+          '🇦🇷 SMN · ' + event.toUpperCase(),
+          headline + ' · ' + description.slice(0, 220) + (severity ? ' · Nivel: ' + severity : '') + ' · Servicio Meteorológico Nacional',
+          { kind: 'official-weather-warning', source: 'SMN Argentina', event, severity });
+      }
+    }
+  }
+}
+
 addEventListener('saveAlertSettings', (resolve, reject, args) => {
   try {
     const details = args || {};
@@ -143,8 +198,9 @@ addEventListener('checkDisasters', async (resolve, reject) => {
     const results = await Promise.allSettled([
       checkQuakes(seen, center, radiusKm),
       checkNaturalEvents(seen, center, radiusKm),
-      checkTropicalStorms(seen),
-      checkOfficialWarnings(seen, center, radiusKm)
+      checkTropicalStorms(seen, center, radiusKm),
+      checkOfficialWarnings(seen, center, radiusKm),
+      checkSmnWarnings(seen, center)
     ]);
     CapacitorKV.set(KEY, JSON.stringify([...seen].slice(-1500)));
     const failures = results.filter(x => x.status === 'rejected');
