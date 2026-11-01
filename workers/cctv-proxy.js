@@ -4,6 +4,9 @@ const TFL_CATALOG = 'https://api.tfl.gov.uk/Place/Type/JamCam';
 const TFL_IMAGE_ORIGIN = 'https://s3-eu-west-1.amazonaws.com';
 const FINLAND_CATALOG = 'https://tie.digitraffic.fi/api/weathercam/v1/stations';
 const FINLAND_IMAGE_ORIGIN = 'https://weathercam.digitraffic.fi/';
+const CELESTRAK_ACTIVE = 'https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=JSON';
+const SATELLITE_LIMIT = 12 * 1024 * 1024;
+const SATELLITE_TTL = 2 * 60 * 60;
 const CATALOG_LIMIT = 4 * 1024 * 1024;
 const IMAGE_LIMIT = 4 * 1024 * 1024;
 const CATALOG_TTL = 60;
@@ -260,6 +263,29 @@ async function getFrame(request, rawId) {
 }
 
 
+
+async function getSatelliteCatalog(request) {
+  const cacheKey = new Request(new URL('/__cache/satellite-active-omm-v1', request.url));
+  return cachedFetch(cacheKey, SATELLITE_TTL, async () => {
+    const upstream = await fetch(CELESTRAK_ACTIVE, {
+      method: 'GET',
+      redirect: 'manual',
+      headers: { 'Accept': 'application/json', 'User-Agent': 'OjoDeDios/2.0 public orbital catalog' }
+    });
+    if (upstream.status >= 300 && upstream.status < 400) return json({ error: 'Redirección de CelesTrak rechazada' }, 502);
+    if (!upstream.ok) return json({ error: `CelesTrak HTTP ${upstream.status}` }, 502);
+    const payload = JSON.parse(new TextDecoder().decode(await readLimited(upstream, SATELLITE_LIMIT)));
+    if (!Array.isArray(payload) || !payload.length) return json({ error: 'Catálogo orbital vacío o inválido' }, 502);
+    return new Response(JSON.stringify(payload), {
+      status: 200,
+      headers: corsHeaders({
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': `public, max-age=${SATELLITE_TTL}`
+      })
+    });
+  });
+}
+
 async function getAisStream(request, env) {
   if (request.headers.get('Upgrade') !== 'websocket') {
     return new Response('Se requiere Upgrade: websocket', { status: 426, headers: corsHeaders() });
@@ -328,6 +354,7 @@ export default {
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders() });
     if (request.method !== 'GET') return json({ error: 'Método no permitido' }, 405);
     try {
+      if (url.pathname === '/api/satellites/active') return await getSatelliteCatalog(request);
       if (url.pathname === '/api/ais-stream') return await getAisStream(request, env);
       if (url.pathname === '/api/cctv/catalog') return await getCatalog(request);
       const match = /^\/api\/cctv-frame\/([^/]+)$/.exec(url.pathname);
