@@ -848,5 +848,10 @@ footer { display:none !important; }
 }
 .environment-dock[hidden] { display:none !important; }
 .environment-dock .dock-item { flex:0 0 66px; min-width:66px; }
-#globe { bottom:0 !important; }
+#globe {
+  top:0 !important; left:0 !important; right:0 !important;
+  bottom:calc(68px + env(safe-area-inset-bottom)) !important;
+  width:100vw !important;
+  height:calc(100dvh - 68px - env(safe-area-inset-bottom)) !important;
+}
 .cesium-viewer-bottom { bottom:calc(74px + env(safe-area-inset-bottom)) !important; }
