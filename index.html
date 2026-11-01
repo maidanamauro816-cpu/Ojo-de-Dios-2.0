@@ -220,6 +220,25 @@
         <span class="layer-state">OFF</span>
       </button>
 
+      <section class="location-alerts-panel" aria-label="Mi ubicación y alertas cercanas">
+        <div class="location-alerts-heading">
+          <span class="location-alerts-icon">📍</span>
+          <div><strong>MI UBICACIÓN Y ALERTAS CERCANAS</strong><small>Alertas según tu posición actual</small></div>
+        </div>
+        <button type="button" id="location-alert-toggle" class="location-alert-toggle" aria-pressed="false">📍 ACTIVAR MI UBICACIÓN</button>
+        <label for="location-alert-radius">Radio para recibir avisos</label>
+        <select id="location-alert-radius">
+          <option value="25">25 km · Muy cerca</option>
+          <option value="50">50 km</option>
+          <option value="100" selected>100 km · Recomendado</option>
+          <option value="250">250 km</option>
+          <option value="500">500 km</option>
+          <option value="1000">1.000 km · Regional</option>
+        </select>
+        <small id="location-alert-status" role="status" aria-live="polite">Desactivada. Activala para recibir avisos de fenómenos cercanos.</small>
+        <div class="location-alert-types">Sismos · Tormentas · Lluvias intensas · Inundaciones · Incendios · Ciclones</div>
+        <small class="location-alert-privacy">La ubicación se usa en el dispositivo para calcular alertas cercanas. Podés desactivarla cuando quieras.</small>
+      </section>
       <div class="hint" id="alerts-status" role="status" aria-live="polite">Alertas Android: se solicitará permiso al iniciar la aplicación.</div>
 
       <!-- Contextual Hint Banner -->
