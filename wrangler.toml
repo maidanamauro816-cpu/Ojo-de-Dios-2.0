@@ -1,0 +1,4 @@
+name = "ojo-de-dios-cctv"
+main = "workers/cctv-proxy.js"
+compatibility_date = "2026-10-31"
+workers_dev = true
