@@ -46,7 +46,7 @@ async function writeCache(records: OmmRecord[]) {
   });
 }
 
-export function createSatelliteLayer({ viewer, Cesium, statusElement }: { viewer: any; Cesium: any; statusElement?: HTMLElement | null }) {
+export function createSatelliteLayer({ viewer, Cesium, apiBase = '', statusElement }: { viewer: any; Cesium: any; apiBase?: string; statusElement?: HTMLElement | null }) {
   const collection = viewer.scene.primitives.add(new Cesium.PointPrimitiveCollection());
   const records: SatelliteRecord[] = [];
   let enabled = false;
@@ -144,7 +144,9 @@ export function createSatelliteLayer({ viewer, Cesium, statusElement }: { viewer
 
     try {
       // OMM JSON supports modern 6+ digit catalog numbers; legacy TLE does not.
-      const response = await fetch('https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=JSON', {
+      const apiRoot = String(apiBase || '').replace(/\\/+$/, '');
+      const catalogUrl = apiRoot ? `${apiRoot}/api/satellites/active` : 'https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=JSON';
+      const response = await fetch(catalogUrl, {
         cache: 'no-store',
         headers: { Accept: 'application/json' },
         signal: AbortSignal.timeout(45000)
