@@ -1,6 +1,7 @@
 import { twoline2satrec, propagate, gstime, eciToGeodetic, degreesLat, degreesLong } from 'satellite.js';
 import { Capacitor } from '@capacitor/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
+import { Geolocation } from '@capacitor/geolocation';
 import { createCctvLayer } from './layers/cctv/cctvLayer.js';
 import { createSatelliteLayer } from './layers/satellites/satelliteLayer.js';
 import { createMarineLayer } from './layers/marine/marineLayer.js';
@@ -150,6 +151,18 @@ async function configureDisasterNotifications() {
       id: 'desastres-live', name: 'Fenómenos naturales',
       description: 'Tormentas, incendios, inundaciones y ciclones', importance: 4, vibration: true
     });
+    let locationLabel = 'sin ubicación precisa';
+    try {
+      let locationPermission = await Geolocation.checkPermissions();
+      if (locationPermission.location !== 'granted') locationPermission = await Geolocation.requestPermissions();
+      if (locationPermission.location === 'granted') {
+        const position = await Geolocation.getCurrentPosition({ enableHighAccuracy: false, timeout: 8000, maximumAge: 15 * 60 * 1000 });
+        localStorage.setItem('ojo-alert-center', JSON.stringify({ lat: position.coords.latitude, lon: position.coords.longitude }));
+        locationLabel = 'radio local disponible';
+      }
+    } catch (locationError) {
+      console.info('Ubicación para alertas no disponible; se mantienen alertas globales importantes.', locationError);
+    }
     await LocalNotifications.addListener('localNotificationActionPerformed', (event) => {
       const extra = event.notification?.extra || {};
       const lat = Number(extra.lat), lon = Number(extra.lon);
@@ -161,7 +174,7 @@ async function configureDisasterNotifications() {
       }
     });
     const el = $('alerts-status');
-    if (el) el.textContent = 'PERMISOS ACTIVOS · revisión periódica Android';
+    if (el) el.textContent = 'PERMISOS ACTIVOS · revisión periódica Android · ' + locationLabel;
   } catch (error) {
     console.warn('No se pudieron configurar las notificaciones:', error);
     const el = $('alerts-status');
