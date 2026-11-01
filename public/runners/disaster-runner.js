@@ -122,8 +122,8 @@ async function checkOfficialWarnings(seen, center, radiusKm) {
 }
 
 function xmlText(block, tag) {
-  const match = block.match(new RegExp('<' + tag + '(?:\\s[^>]*)?>([\\s\\S]*?)</' + tag + '>', 'i'));
-  return match ? match[1].replace(/<!\\[CDATA\\[|\\]\\]>/g, '').replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').trim() : '';
+  const match = block.match(new RegExp('<' + tag + '(?:\s[^>]*)?>([\s\S]*?)</' + tag + '>', 'i'));
+  return match ? match[1].replace(/<!\[CDATA\[|\]\]>/g, '').replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').trim() : '';
 }
 function pointInPolygon(point, polygon) {
   const x = point.longitude, y = point.latitude;
@@ -141,20 +141,20 @@ async function checkSmnWarnings(seen, center) {
   const response = await fetch(SOURCES.smn, { headers: { Accept: 'application/rss+xml, application/xml, text/xml' } });
   if (!response.ok) throw new Error('SMN CAP RSS HTTP ' + response.status);
   const feed = await response.text();
-  const items = feed.match(/<item(?:\\s[^>]*)?>[\\s\\S]*?<\\/item>/gi) || [];
+  const items = feed.match(/<item(?:\s[^>]*)?>[\s\S]*?<\/item>/gi) || [];
   for (const item of items) {
     const link = xmlText(item, 'link');
-    if (!link || !/^https?:\\/\\//i.test(link)) continue;
+    if (!link || !/^https?:\/\//i.test(link)) continue;
     const capResponse = await fetch(link, { headers: { Accept: 'application/xml, text/xml' } });
     if (!capResponse.ok) continue;
     const cap = await capResponse.text();
     const identifier = xmlText(cap, 'identifier') || link;
-    const infoBlocks = cap.match(/<info(?:\\s[^>]*)?>[\\s\\S]*?<\\/info>/gi) || [cap];
+    const infoBlocks = cap.match(/<info(?:\s[^>]*)?>[\s\S]*?<\/info>/gi) || [cap];
     for (const info of infoBlocks) {
-      const areas = info.match(/<area(?:\\s[^>]*)?>[\\s\\S]*?<\\/area>/gi) || [];
+      const areas = info.match(/<area(?:\s[^>]*)?>[\s\S]*?<\/area>/gi) || [];
       for (const area of areas) {
         const polygonText = xmlText(area, 'polygon');
-        const polygon = polygonText.split(/\\s+/).map(pair => {
+        const polygon = polygonText.split(/\s+/).map(pair => {
           const values = pair.split(',').map(Number);
           return values.length === 2 ? { latitude: values[0], longitude: values[1] } : null;
         }).filter(p => p && Number.isFinite(p.latitude) && Number.isFinite(p.longitude));
