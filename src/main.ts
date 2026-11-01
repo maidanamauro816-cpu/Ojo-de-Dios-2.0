@@ -1,6 +1,7 @@
 import { twoline2satrec, propagate, gstime, eciToGeodetic, degreesLat, degreesLong } from 'satellite.js';
 import { createCctvLayer } from './layers/cctv/cctvLayer.js';
 import { createSatelliteLayer } from './layers/satellites/satelliteLayer.js';
+import { createMarineLayer } from './layers/marine/marineLayer.js';
 
 declare const Cesium: any;
 
@@ -112,6 +113,7 @@ viewer.camera.setView({
 const cctvApiBase = (import.meta as any).env?.VITE_CCTV_API_BASE || '';
 const cctvLayer = createCctvLayer({ viewer, Cesium, container: $('camera-tools'), apiBase: cctvApiBase });
 const globalSatelliteLayer = createSatelliteLayer({ viewer, Cesium, statusElement: $('satellite-status-pill') });
+const marineLayer = createMarineLayer({ viewer, Cesium, apiBase: cctvApiBase, statusElement: $('marine-status-pill') });
 
 // Optional Cesium ion Photorealistic 3D Tiles. Use a restricted ion token in
 // VITE_CESIUM_ION_TOKEN; without it the existing globe imagery remains active.
@@ -795,7 +797,8 @@ document.querySelectorAll('[data-layer]').forEach((btn) => {
       btn.querySelector('.layer-state')!.textContent = layerStates.military ? 'ON' : 'OFF';
     } else if (layer === 'ships') {
       layerStates.ships = !layerStates.ships;
-      if (marineTools) marineTools.hidden = !layerStates.ships;
+      if (marineTools) marineTools.hidden = true;
+      marineLayer.setEnabled(layerStates.ships);
       btn.classList.toggle('active', layerStates.ships);
       btn.querySelector('.layer-state')!.textContent = layerStates.ships ? 'ON' : 'OFF';
     } else if (layer === 'cameras') {
