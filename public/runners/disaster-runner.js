@@ -1,4 +1,5 @@
 const KEY = 'ojo-dios-bg-seen-v1';
+const SETTINGS_KEY = 'ojo-dios-alert-settings-v1';
 const SOURCES = {
   quakes: 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson',
   eonet: 'https://eonet.gsfc.nasa.gov/api/v3/events?status=open&limit=100',
@@ -28,14 +29,31 @@ async function alertOnce(seen, key, title, body, extra = {}) {
   });
 }
 function distanceKm(a, b) { const r = Math.PI / 180, dLat = (b.latitude - a.latitude) * r, dLon = (b.longitude - a.longitude) * r; const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.latitude * r) * Math.cos(b.latitude * r) * Math.sin(dLon / 2) ** 2; return 6371 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h)); }
-async function getAlertCenter() { try { const p = await CapacitorGeolocation.getCurrentPosition(); return { latitude: Number(p.latitude), longitude: Number(p.longitude) }; } catch { return null; } }
-async function checkQuakes(seen, center) {
+async function getSettings() {
+  try { return JSON.parse(CapacitorKV.get(SETTINGS_KEY).value || '{}'); }
+  catch { return {}; }
+}
+async function getAlertCenter(settings) {
+  try {
+    const p = await CapacitorGeolocation.getCurrentPosition();
+    const center = { latitude: Number(p.latitude), longitude: Number(p.longitude) };
+    if (Number.isFinite(center.latitude) && Number.isFinite(center.longitude)) {
+      settings.latitude = center.latitude;
+      settings.longitude = center.longitude;
+      CapacitorKV.set(SETTINGS_KEY, JSON.stringify(settings));
+      return center;
+    }
+  } catch (error) { console.info('Ubicación en segundo plano no disponible; usando última posición autorizada.', error); }
+  const latitude = Number(settings.latitude), longitude = Number(settings.longitude);
+  return Number.isFinite(latitude) && Number.isFinite(longitude) ? { latitude, longitude } : null;
+}
+async function checkQuakes(seen, center, radiusKm) {
   const data = await json(SOURCES.quakes);
   for (const quake of data.features || []) {
     const p = quake.properties || {}, c = quake.geometry?.coordinates || [];
     const lon = Number(c[0]), lat = Number(c[1]), depth = Number(c[2]), mag = Number(p.mag);
     if (![lon, lat, depth, mag].every(Number.isFinite)) continue;
-    const nearby = center && distanceKm(center, { latitude: lat, longitude: lon }) <= 1000;
+    const nearby = center && distanceKm(center, { latitude: lat, longitude: lon }) <= radiusKm;
     if (mag < 5.5 && !(nearby && mag >= 3.0)) continue;
     await alertOnce(seen, 'usgs:' + quake.id,
       '🚨 SISMO M' + mag.toFixed(1) + ' · ' + (p.place || 'Ubicación no informada'),
@@ -43,7 +61,7 @@ async function checkQuakes(seen, center) {
       { kind: 'earthquake', lat, lon, magnitude: mag, eventId: quake.id });
   }
 }
-async function checkNaturalEvents(seen, center) {
+async function checkNaturalEvents(seen, center, radiusKm) {
   const data = await json(SOURCES.eonet);
   const allowed = new Set(['severeStorms', 'wildfires', 'volcanoes', 'floods']);
   for (const event of data.events || []) {
@@ -53,7 +71,7 @@ async function checkNaturalEvents(seen, center) {
     const point = [...geometry].reverse().find(g => g.type === 'Point' && Array.isArray(g.coordinates));
     const lon = point ? Number(point.coordinates[0]) : null;
     const lat = point ? Number(point.coordinates[1]) : null;
-    if (center && Number.isFinite(lat) && Number.isFinite(lon) && distanceKm(center, { latitude: lat, longitude: lon }) > 1200) continue;
+    if (center && Number.isFinite(lat) && Number.isFinite(lon) && distanceKm(center, { latitude: lat, longitude: lon }) > radiusKm) continue;
     const category = categories.map(c => c.title || c.id).join(', ');
     await alertOnce(seen, 'eonet:' + event.id,
       '🌍 ALERTA NATURAL · ' + (event.title || category),
@@ -79,7 +97,7 @@ function firstPoint(value) {
   for (const child of value) { const point = firstPoint(child); if (point) return point; }
   return null;
 }
-async function checkOfficialWarnings(seen) {
+async function checkOfficialWarnings(seen, center, radiusKm) {
   const response = await fetch('https://api.weather.gov/alerts/active?status=actual&message_type=alert', {
     method: 'GET',
     headers: { Accept: 'application/geo+json', 'User-Agent': 'Ojo-de-Dios-2.0 public safety alerts' }
@@ -92,6 +110,7 @@ async function checkOfficialWarnings(seen) {
     if (!accepted.has(p.event)) continue;
     const point = firstPoint(feature.geometry?.coordinates);
     const lon = point ? Number(point[0]) : null, lat = point ? Number(point[1]) : null;
+    if (center && Number.isFinite(lat) && Number.isFinite(lon) && distanceKm(center, { latitude: lat, longitude: lon }) > radiusKm) continue;
     await alertOnce(seen, 'nws:' + (feature.id || p.id || p.sent),
       '⚠️ ' + p.event.toUpperCase() + ' · ' + (p.areaDesc || 'Alerta oficial'),
       (p.headline || p.description || p.event) + ' · Servicio Meteorológico Nacional de EE. UU.',
@@ -99,11 +118,34 @@ async function checkOfficialWarnings(seen) {
   }
 }
 
+addEventListener('saveAlertSettings', (resolve, reject, args) => {
+  try {
+    const details = args || {};
+    const settings = {
+      enabled: details.enabled === true,
+      radiusKm: Math.max(10, Math.min(1000, Number(details.radiusKm) || 100)),
+      latitude: Number.isFinite(Number(details.latitude)) ? Number(details.latitude) : null,
+      longitude: Number.isFinite(Number(details.longitude)) ? Number(details.longitude) : null
+    };
+    CapacitorKV.set(SETTINGS_KEY, JSON.stringify(settings));
+    resolve();
+  } catch (error) { reject(error); }
+});
+
 addEventListener('checkDisasters', async (resolve, reject) => {
   try {
+    const settings = await getSettings();
+    if (settings.enabled !== true) { resolve(); return; }
+    const radiusKm = Math.max(10, Math.min(1000, Number(settings.radiusKm) || 100));
     const seen = await loadSeen();
-    const center = await getAlertCenter();
-    const results = await Promise.allSettled([checkQuakes(seen, center), checkNaturalEvents(seen, center), checkTropicalStorms(seen), checkOfficialWarnings(seen)]);
+    const center = await getAlertCenter(settings);
+    if (!center) { console.warn('Alertas cercanas activas, pero no hay una ubicación autorizada disponible.'); resolve(); return; }
+    const results = await Promise.allSettled([
+      checkQuakes(seen, center, radiusKm),
+      checkNaturalEvents(seen, center, radiusKm),
+      checkTropicalStorms(seen),
+      checkOfficialWarnings(seen, center, radiusKm)
+    ]);
     CapacitorKV.set(KEY, JSON.stringify([...seen].slice(-1500)));
     const failures = results.filter(x => x.status === 'rejected');
     if (failures.length) console.warn('Fuentes de alertas con error:', failures.length);
