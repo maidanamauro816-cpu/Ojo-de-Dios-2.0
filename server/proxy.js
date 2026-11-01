@@ -50,7 +50,7 @@ function ipIsPublic(address) {
 }
 
 function hostMatches(hostname, allowedHosts = []) {
-  const host = hostname.toLowerCase().replace(/\\.$/, '');
+  const host = hostname.toLowerCase().replace(/\.$/, '');
   return allowedHosts.some((entry) => {
     const allowed = String(entry).toLowerCase();
     return host === allowed || host.endsWith('.' + allowed);
@@ -227,7 +227,7 @@ export function cctvProxy() {
             return;
           }
 
-          const match = /^\\/api\\/cctv-frame\\/([^/]+)$/.exec(pathname);
+          const match = /^\/api\/cctv-frame\/([^/]+)$/.exec(pathname);
           if (match) {
             const id = decodeURIComponent(match[1]);
             const camera = cameraIndex.get(id) || (await getCatalog()).cameras.find((item) => item.id === id);
