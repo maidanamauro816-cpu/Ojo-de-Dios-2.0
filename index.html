@@ -103,6 +103,12 @@
           <span class="layer-state">ON</span>
         </button>
 
+        <button data-layer="cameras" class="layer" id="btn-cameras">
+          <span class="layer-icon">📷</span>
+          <span class="layer-info"><strong>CÁMARAS PÚBLICAS DE TRÁNSITO</strong><small>Catálogos oficiales · poses estimadas · VIEWSHED</small></span>
+          <span class="layer-state">OFF</span>
+        </button>
+
         <button data-layer="flights" class="layer" id="btn-flights">
           <span class="layer-icon">✈</span>
           <span class="layer-info">
@@ -176,7 +182,7 @@
         </div>
       </div>
 
-      <div id="camera-tools" class="marine-tools" hidden><div class="marine-card"><div class="marine-card-title">📷 VISOR DE CÁMARAS AUTORIZADAS</div><p>Esta capa permite incorporar cámaras propias o fuentes públicas oficiales que autoricen expresamente su retransmisión.</p><small class="muted">No busca ni muestra cámaras privadas expuestas en Internet. La conexión RTSP/HTTPS se configura con la URL y credenciales del propietario.</small></div></div>
+      <section id="camera-tools" class="cctv-panel" hidden aria-label="Cámaras públicas de tránsito"><div class="cctv-head"><strong>📷 CCTV MESH · FUENTES OFICIALES</strong><span id="cctv-status">Desactivado</span></div><div class="cctv-actions"><button type="button" id="cctv-nearest" class="mini-btn">◎ NEAREST</button><button type="button" id="cctv-viewshed" class="mini-btn" aria-pressed="false">◉ VIEWSHED</button><button type="button" id="cctv-reload" class="mini-btn">↻ Actualizar</button></div><div class="cctv-region-title">REGIONES</div><div id="cctv-regions" class="cctv-regions"></div><div id="cctv-details" class="cctv-details">Seleccioná una cámara para ver su ficha y calibrar su orientación.</div><small class="muted">Solo snapshots públicos de tráfico. Las orientaciones y volúmenes de cobertura son estimaciones editables, no vigilancia certificada. La disponibilidad y licencia se verifican por fuente.</small></section>
 
       <!-- Contextual Hint Banner -->
       <div class="hint" id="hint">
