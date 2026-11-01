@@ -15,7 +15,8 @@ export function createJsonCameraSource(config) {
       const response = await fetchWithCap(this.catalogUrl, {
         maxBytes: config.maxBytes || 2 * 1024 * 1024,
         redirect: 'error',
-        allowedHosts: this.allowedHosts
+        allowedHosts: this.allowedHosts,
+        headers: config.headers || {}
       });
       if (!response.ok) throw new Error(`${this.id} HTTP ${response.status}`);
       const data = await response.json();
@@ -49,6 +50,7 @@ export function createJsonCameraSource(config) {
         Number.isFinite(point.lon) &&
         point.lat >= -90 && point.lat <= 90 &&
         point.lon >= -180 && point.lon <= 180;
+        && (typeof config.isValid !== 'function' || config.isValid(point));
     }
   };
   return source;
