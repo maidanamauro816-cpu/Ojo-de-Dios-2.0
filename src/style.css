@@ -771,3 +771,29 @@ footer { display:none !important; }
 .layer-dock {z-index:50!important; pointer-events:auto!important}
 .layer-dock .dock-item {touch-action:manipulation}
 .satellite-status-pill {z-index:25!important; bottom:calc(84px + env(safe-area-inset-bottom))!important}
+
+
+/* Controles del mosaico meteorológico global */
+.weather-global-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 0 6px;
+  padding: 10px;
+  border: 1px solid rgba(100, 190, 255, .28);
+  border-radius: 10px;
+  background: rgba(10, 35, 52, .55);
+  color: #dbeafe;
+}
+.weather-global-controls strong { font-size: 10px; letter-spacing: .08em; color: #8bd5ff; }
+.weather-global-controls label,.weather-global-controls small { font-size: 10px; color: #aab8c8; }
+.weather-global-controls input {
+  width: 100%;
+  min-height: 34px;
+  padding: 6px 8px;
+  color: #e8f4ff;
+  background: #071522;
+  border: 1px solid rgba(139, 213, 255, .35);
+  border-radius: 7px;
+  color-scheme: dark;
+}
