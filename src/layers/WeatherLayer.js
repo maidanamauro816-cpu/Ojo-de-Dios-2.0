@@ -1,8 +1,10 @@
 import { fetchCurrentWeather } from "../fetchers/weather.js";
 
 export class WeatherLayer {
-  constructor(viewer,onStatus=()=>{}){this.viewer=viewer;this.onStatus=onStatus;this.entity=null;this.visible=false;this.controller=null;this.timer=null;}
+  constructor(viewer,onStatus=()=>{}){this.viewer=viewer;this.onStatus=onStatus;this.entity=null;this.visible=false;this.controller=null;this.timer=null;this.userLocation=null;}
+  setLocation(latitude,longitude){this.userLocation=Number.isFinite(latitude)&&Number.isFinite(longitude)?[latitude,longitude]:null;if(this.visible)this.refresh();}
   center(){
+    if(this.userLocation)return this.userLocation;
     const p=this.viewer.camera.pickEllipsoid(new Cesium.Cartesian2(this.viewer.canvas.clientWidth/2,this.viewer.canvas.clientHeight/2),this.viewer.scene.globe.ellipsoid);
     if(!p)return null;
     const c=Cesium.Cartographic.fromCartesian(p);
