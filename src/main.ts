@@ -1112,10 +1112,18 @@ async function loadPublicPoliceFacilities() {
     if (securityDataStatus) securityDataStatus.textContent = 'No se pudo calcular el área visible del globo.';
     return;
   }
+  if (layerStates.military) {
+    const militaryButton = document.getElementById('btn-military') as HTMLButtonElement | null;
+    militaryButton?.click();
+  }
   const south = Cesium.Math.toDegrees(rectangle.south);
   const west = Cesium.Math.toDegrees(rectangle.west);
   const north = Cesium.Math.toDegrees(rectangle.north);
   const east = Cesium.Math.toDegrees(rectangle.east);
+  if (Math.abs(east - west) > 35 || Math.abs(north - south) > 25) {
+    if (securityDataStatus) securityDataStatus.textContent = 'Acercá el globo a una ciudad o región para consultar sus dependencias policiales públicas.';
+    return;
+  }
   const bbox = [south, west, north, east].join(',');
   const query = '[out:json][timeout:20];(node["amenity"="police"](' + bbox + ');way["amenity"="police"](' + bbox + ');relation["amenity"="police"](' + bbox + '););out center tags 2000;';
   try {
@@ -1191,6 +1199,7 @@ if (settingsToggle && settingsMenu) {
 
 document.querySelectorAll<HTMLElement>('[data-config-layer]').forEach((button) => {
   button.addEventListener('click', () => {
+    clearPoliceEntities();
     const layer = button.dataset.configLayer;
     const target = layer ? document.querySelector<HTMLElement>(`#main-panel [data-layer="${layer}"]`) : null;
     if (target) {
@@ -1240,6 +1249,7 @@ if (settingsLocationStatus) {
 // Barra inferior: cada botón controla una capa real y mantiene las capas dinámicas separadas.
 document.querySelectorAll<HTMLElement>('[data-shortcut-layer]').forEach((shortcut) => {
   shortcut.addEventListener('click', () => {
+    clearPoliceEntities();
     const layer = shortcut.dataset.shortcutLayer;
     if (!layer) return;
     const target = document.querySelector<HTMLElement>(`#main-panel [data-layer="${layer}"]`);
