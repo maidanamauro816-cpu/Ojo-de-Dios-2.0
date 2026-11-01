@@ -11,12 +11,13 @@ import { ColombiaInviasSource } from './colombia-invias.js';
 import { FranciaVinciSource } from './francia-vinci.js';
 import { PeruMtcSource } from './peru-mtc.js';
 import { AlemaniaAutobahnSource } from './alemania-autobahn.js';
+import { NorwayVegvesenSource } from './norway-vegvesen.js';
 
 export const CCTV_REGISTRY = [
   DelawareSource, ArgentinaCabaSource, SpainDgtSource, BrasilArtespSource,
   AustriaAsfinagSource, JapanNexcoSource, ChileMopSource, MexicoCapufeSource,
   ItaliaAutostradeSource, ColombiaInviasSource, FranciaVinciSource,
-  PeruMtcSource, AlemaniaAutobahnSource
+  PeruMtcSource, AlemaniaAutobahnSource, NorwayVegvesenSource
 ];
 
 /**
@@ -66,4 +67,4 @@ export async function loadAllCameras({ fetchWithCap, sources = CCTV_REGISTRY, pe
 export { DelawareSource, ArgentinaCabaSource, SpainDgtSource, BrasilArtespSource,
   AustriaAsfinagSource, JapanNexcoSource, ChileMopSource, MexicoCapufeSource,
   ItaliaAutostradeSource, ColombiaInviasSource, FranciaVinciSource, PeruMtcSource,
-  AlemaniaAutobahnSource };
+  AlemaniaAutobahnSource, NorwayVegvesenSource };
