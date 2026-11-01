@@ -975,6 +975,7 @@ viewer.camera.moveEnd.addEventListener(() => {
   if (flightsEnabled) {
     loadFlights(true);
   }
+  if (layerStates.weather) weatherLayer.refresh();
   updateHudCoords();
 });
 
