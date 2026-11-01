@@ -37,7 +37,7 @@ La capa incluye filtros regionales, NEAREST, VIEWSHED geométrico estimado y cal
 
 - Satélites: se muestran los activos con elementos orbitales públicos disponibles en CelesTrak; no incluye objetos sin efemérides públicas ni garantiza cada objeto catalogado.
 - Aviones: ADS-B público por radio alrededor del centro visible, no un mapa mundial completo.
-- Barcos: el botón AIS todavía requiere integrar un proveedor de datos y sus condiciones de acceso; no se presenta como telemetría conectada.
+- Barcos: la capa AIS consulta AISStream por WebSocket para el rectángulo visible del globo. Requiere la clave gratuita `AISSTREAM_API_KEY` como secreto del repositorio; el Worker la conserva en servidor y nunca se incluye en el APK. La cobertura depende de receptores AIS participantes y no representa todos los buques del planeta.
 
 ### Cesium ion opcional
 

@@ -46,7 +46,7 @@ async function writeCache(records: OmmRecord[]) {
   });
 }
 
-export function createSatelliteLayer({ viewer, Cesium, statusElement }: { viewer: any; Cesium: any; statusElement?: HTMLElement | null }) {
+export function createSatelliteLayer({ viewer, Cesium, apiBase = '', statusElement }: { viewer: any; Cesium: any; apiBase?: string; statusElement?: HTMLElement | null }) {
   const collection = viewer.scene.primitives.add(new Cesium.PointPrimitiveCollection());
   const records: SatelliteRecord[] = [];
   let enabled = false;
@@ -144,12 +144,25 @@ export function createSatelliteLayer({ viewer, Cesium, statusElement }: { viewer
 
     try {
       // OMM JSON supports modern 6+ digit catalog numbers; legacy TLE does not.
-      const response = await fetch('https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=JSON', {
-        cache: 'no-store',
-        headers: { Accept: 'application/json' },
-        signal: AbortSignal.timeout(45000)
-      });
-      if (!response.ok) throw new Error(`CelesTrak HTTP ${response.status}`);
+      const apiRoot = String(apiBase || '').replace(/\/+$/, '');
+      const directUrl = 'https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=JSON';
+      const urls = apiRoot ? [apiRoot + '/api/satellites/active', directUrl] : [directUrl];
+      let response: Response | null = null;
+      let fetchError: unknown = null;
+      for (const url of urls) {
+        try {
+          const candidate = await fetch(url, {
+            cache: 'no-store',
+            headers: { Accept: 'application/json' },
+            signal: AbortSignal.timeout(45000)
+          });
+          if (candidate.ok) { response = candidate; break; }
+          fetchError = new Error('Catálogo orbital HTTP ' + candidate.status);
+        } catch (error) {
+          fetchError = error;
+        }
+      }
+      if (!response) throw fetchError || new Error('No se pudo cargar el catálogo orbital');
       const payload = await response.json();
       if (!Array.isArray(payload) || !payload.length) throw new Error('El catálogo orbital llegó vacío o con formato inesperado.');
       await writeCache(payload);

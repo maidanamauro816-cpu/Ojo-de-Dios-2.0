@@ -742,3 +742,8 @@ footer { display:none !important; }
   backdrop-filter: blur(12px);
 }
 .satellite-status-pill[hidden] { display: none !important; }
+
+
+#marine-status-pill {
+  bottom: calc(124px + env(safe-area-inset-bottom, 0px));
+}
