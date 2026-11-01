@@ -816,7 +816,34 @@ document.querySelectorAll('[data-layer]').forEach((btn) => {
   });
 });
 
-// Barra inferior: reutiliza exactamente los controles de capa existentes.\ndocument.querySelectorAll('[data-shortcut-layer]').forEach((shortcut) => {\n  shortcut.addEventListener('click', () => {\n    const layer = (shortcut as HTMLElement).dataset.shortcutLayer;\n    if (!layer) return;\n    const original = document.querySelector<HTMLElement>(\`#main-panel [data-layer="\${layer}"]\`);\n    if (original) original.click();\n    document.querySelectorAll<HTMLElement>(\`[data-shortcut-layer="\${layer}"]\`).forEach((item) => {\n      const active = layer === 'cameras' ? layerStates.cameras : layerStates[layer] ?? false;\n      item.classList.toggle('active', active);\n      item.setAttribute('aria-pressed', String(active));\n    });\n  });\n});\n\n// Search and radius controls
+// Barra inferior: cada botón controla una capa real y mantiene las capas dinámicas separadas.
+document.querySelectorAll<HTMLElement>('[data-shortcut-layer]').forEach((shortcut) => {
+  shortcut.addEventListener('click', () => {
+    const layer = shortcut.dataset.shortcutLayer;
+    if (!layer) return;
+    const target = document.querySelector<HTMLElement>(`#main-panel [data-layer="${layer}"]`);
+    if (!target) return;
+
+    const currentlyEnabled = layer === 'cameras' ? layerStates.cameras : Boolean(layerStates[layer]);
+    const liveLayers = ['iss', 'satellites', 'flights', 'ships', 'cameras'];
+    if (!currentlyEnabled && liveLayers.includes(layer)) {
+      liveLayers.filter((other) => other !== layer).forEach((other) => {
+        const active = other === 'cameras' ? layerStates.cameras : Boolean(layerStates[other]);
+        if (active) document.querySelector<HTMLElement>(`#main-panel [data-layer="${other}"]`)?.click();
+      });
+    }
+    target.click();
+
+    document.querySelectorAll<HTMLElement>('[data-shortcut-layer]').forEach((item) => {
+      const key = item.dataset.shortcutLayer || '';
+      const active = key === 'cameras' ? layerStates.cameras : Boolean(layerStates[key]);
+      item.classList.toggle('active', active);
+      item.setAttribute('aria-pressed', String(active));
+    });
+  });
+});
+
+// Search and radius controls
 if (flightFilter) {
   flightFilter.addEventListener('input', (e) => {
     currentFilterText = (e.target as HTMLInputElement).value;
