@@ -190,6 +190,25 @@ const locationStatus = $('location-alert-status');
 const locationRadius = $('location-alert-radius') as HTMLSelectElement | null;
 let locationWatchId: string | null = null;
 let lastAlertPosition: { latitude: number; longitude: number } | null = null;
+let userLocationEntity: any = null;
+function updateUserLocationMarker(position: { latitude: number; longitude: number } | null) {
+  if (!position) {
+    if (userLocationEntity) viewer.entities.remove(userLocationEntity);
+    userLocationEntity = null;
+    return;
+  }
+  const cartesian = Cesium.Cartesian3.fromDegrees(position.longitude, position.latitude, 20);
+  if (!userLocationEntity) {
+    userLocationEntity = viewer.entities.add({
+      name: 'MI UBICACIÓN',
+      position: cartesian,
+      point: { pixelSize: 13, color: Cesium.Color.CYAN, outlineColor: Cesium.Color.WHITE, outlineWidth: 2 },
+      label: { text: 'MI UBICACIÓN', font: '11px sans-serif', fillColor: Cesium.Color.WHITE, outlineColor: Cesium.Color.BLACK, outlineWidth: 3, style: Cesium.LabelStyle.FILL_AND_OUTLINE, pixelOffset: new Cesium.Cartesian2(0, -20), disableDepthTestDistance: Number.POSITIVE_INFINITY }
+    });
+  } else {
+    userLocationEntity.position = cartesian;
+  }
+}
 try {
   const savedPosition = JSON.parse(localStorage.getItem('ojo-alert-last-position') || 'null');
   if (savedPosition && Number.isFinite(savedPosition.latitude) && Number.isFinite(savedPosition.longitude)) lastAlertPosition = savedPosition;
@@ -243,6 +262,7 @@ async function activateLocationAlerts() {
       latitude: position.coords.latitude,
       longitude: position.coords.longitude
     };
+    updateUserLocationMarker(lastAlertPosition);
     await saveAlertSettings(true, lastAlertPosition);
     renderLocationState(true,
       'Ubicación activada · ' + lastAlertPosition.latitude.toFixed(4) + ', ' +
@@ -256,6 +276,7 @@ async function activateLocationAlerts() {
           latitude: nextPosition.coords.latitude,
           longitude: nextPosition.coords.longitude
         };
+        updateUserLocationMarker(lastAlertPosition);
         try {
           await saveAlertSettings(true, lastAlertPosition);
           renderLocationState(true,
@@ -278,6 +299,7 @@ async function deactivateLocationAlerts() {
     locationWatchId = null;
   }
   lastAlertPosition = null;
+  updateUserLocationMarker(null);
   await saveAlertSettings(false);
   renderLocationState(false, 'Ubicación desactivada. No se buscarán alertas cercanas a tu posición.');
 }
@@ -294,6 +316,7 @@ if (locationRadius) {
 }
 if (locationToggle) {
   const wasEnabled = localStorage.getItem('ojo-alerts-enabled') === 'true';
+  if (wasEnabled && lastAlertPosition) updateUserLocationMarker(lastAlertPosition);
   renderLocationState(wasEnabled, wasEnabled
     ? 'Alertas cercanas activadas. El control en segundo plano usa la última ubicación autorizada; tocá para desactivarlas.'
     : 'Desactivada. Activala para recibir avisos de fenómenos cercanos.');
