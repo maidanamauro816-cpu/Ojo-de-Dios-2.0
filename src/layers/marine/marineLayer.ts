@@ -1,5 +1,3 @@
-import type { Camera } from 'cesium';
-
 type Bounds = { south: number; north: number; west: number; east: number };
 type Vessel = { point: any; lastSeen: number; name: string; mmsi: string };
 
