@@ -189,6 +189,22 @@ const locationToggle = $('location-alert-toggle') as HTMLButtonElement | null;
 const locationStatus = $('location-alert-status');
 const locationRadius = $('location-alert-radius') as HTMLSelectElement | null;
 let locationWatchId: string | null = null;
+let lastLocationSyncAt = 0;
+let lastLocationSyncPosition: { latitude: number; longitude: number } | null = null;
+function shouldSyncLocation(position: { latitude: number; longitude: number }) {
+  const now = Date.now();
+  if (!lastLocationSyncPosition || now - lastLocationSyncAt > 180000) {
+    lastLocationSyncPosition = position; lastLocationSyncAt = now; return true;
+  }
+  const rad = Math.PI / 180;
+  const dLat = (position.latitude - lastLocationSyncPosition.latitude) * rad;
+  const dLon = (position.longitude - lastLocationSyncPosition.longitude) * rad;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lastLocationSyncPosition.latitude * rad) *
+    Math.cos(position.latitude * rad) * Math.sin(dLon / 2) ** 2;
+  const km = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  if (km < 1) return false;
+  lastLocationSyncPosition = position; lastLocationSyncAt = now; return true;
+}
 let lastAlertPosition: { latitude: number; longitude: number } | null = null;
 let userLocationEntity: any = null;
 function updateUserLocationMarker(position: { latitude: number; longitude: number } | null) {
@@ -284,6 +300,7 @@ async function activateLocationAlerts() {
           longitude: nextPosition.coords.longitude
         };
         updateUserLocationMarker(lastAlertPosition);
+        if (!shouldSyncLocation(lastAlertPosition)) return;
         weatherLayer.setLocation(lastAlertPosition.latitude, lastAlertPosition.longitude);
         try {
           await saveAlertSettings(true, lastAlertPosition);
