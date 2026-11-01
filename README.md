@@ -27,7 +27,7 @@ El workflow `.github/workflows/android.yml` compila un APK de depuración en cad
 
 ## Cámaras públicas
 
-La capa CCTV incorpora la fuente oficial de Statens vegvesen (Noruega): catálogo GeoJSON público, snapshots publicados por la autoridad vial y atribución NLOD 2.0. Se filtran cámaras que el propio catálogo marca como defectuosas. Las demás fuentes regionales del registro siguen deshabilitadas hasta verificar sus endpoints, formatos y permisos de reutilización.
+La capa CCTV incorpora tres redes públicas oficiales: Statens vegvesen (Noruega, NLOD 2.0), Transport for London JamCams (Reino Unido, OGL v3.0) y Fintraffic/Digitraffic (Finlandia, CC BY 4.0). Se filtran cámaras que las propias fuentes marcan como no disponibles y cada red conserva su atribución. Las demás fuentes regionales del registro siguen deshabilitadas hasta verificar sus endpoints, formatos y permisos de reutilización.
 
 El proxy Node integrado en Vite limita catálogos e imágenes, exige HTTPS, aplica allowlist de hosts, valida DNS/IP y rechaza redirecciones durante desarrollo. Para Android se incorpora un Cloudflare Worker independiente (`workers/cctv-proxy.js`) con rutas `/api/cctv/catalog` y `/api/cctv-frame/{id}`. El despliegue automático usa los secretos `CLOUDFLARE_ACCOUNT_ID` y `CLOUDFLARE_API_TOKEN` del repositorio; si faltan, el workflow omite el despliegue y la cámara no estará disponible desde el APK hasta configurarlos.
 

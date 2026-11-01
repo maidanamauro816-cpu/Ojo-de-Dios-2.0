@@ -61,7 +61,7 @@ function hostMatches(hostname, allowedHosts = []) {
  * HTTPS-only, DNS-pinned request. Redirects are never followed. The DNS result
  * is checked and the socket is pinned to that public address to reduce rebinding.
  */
-async function requestCapped(rawUrl, { allowedHosts = [], maxBytes = FRAME_MAX_BYTES } = {}) {
+async function requestCapped(rawUrl, { allowedHosts = [], maxBytes = FRAME_MAX_BYTES, headers = {} } = {}) {
   const url = new URL(rawUrl);
   if (url.protocol !== 'https:' || url.username || url.password || (url.port && url.port !== '443')) {
     throw new Error('Solo se permiten URLs HTTPS públicas en puerto 443');
@@ -75,6 +75,12 @@ async function requestCapped(rawUrl, { allowedHosts = [], maxBytes = FRAME_MAX_B
     throw new Error('DNS resolvió a una dirección no pública; solicitud bloqueada');
   }
   const pinned = addresses[0];
+  const extraHeaders = {};
+  for (const [name, value] of Object.entries(headers || {})) {
+    if (name.toLowerCase() === 'digitraffic-user' && typeof value === 'string' && value.length <= 120) {
+      extraHeaders['digitraffic-user'] = value;
+    }
+  }
 
   return new Promise((resolve, reject) => {
     let settled = false;
@@ -92,7 +98,8 @@ async function requestCapped(rawUrl, { allowedHosts = [], maxBytes = FRAME_MAX_B
       path: url.pathname + url.search,
       headers: {
         accept: 'application/json,image/jpeg,image/png,image/webp,image/gif;q=0.9,*/*;q=0.1',
-        'user-agent': 'OjoDeDios-CCTV/2.0 (+public government traffic camera viewer)'
+        'user-agent': 'OjoDeDios-CCTV/2.0 (+public government traffic camera viewer)',
+        ...extraHeaders
       },
       lookup: (_hostname, _options, callback) => callback(null, pinned.address, pinned.family),
       timeout: REQUEST_TIMEOUT_MS
@@ -153,7 +160,8 @@ async function fetchWithCap(url, options = {}) {
   if (options.redirect !== 'error') throw new Error('El proxy exige redirect: error');
   const result = await requestCapped(url, {
     allowedHosts: options.allowedHosts || [],
-    maxBytes: Math.min(Number(options.maxBytes) || CATALOG_MAX_BYTES, CATALOG_MAX_BYTES)
+    maxBytes: Math.min(Number(options.maxBytes) || CATALOG_MAX_BYTES, CATALOG_MAX_BYTES),
+    headers: options.headers || {}
   });
   return asResponse(result);
 }
