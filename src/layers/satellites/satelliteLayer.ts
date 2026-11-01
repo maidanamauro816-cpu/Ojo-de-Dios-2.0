@@ -145,13 +145,24 @@ export function createSatelliteLayer({ viewer, Cesium, apiBase = '', statusEleme
     try {
       // OMM JSON supports modern 6+ digit catalog numbers; legacy TLE does not.
       const apiRoot = String(apiBase || '').replace(/\/+$/, '');
-      const catalogUrl = apiRoot ? `${apiRoot}/api/satellites/active` : 'https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=JSON';
-      const response = await fetch(catalogUrl, {
-        cache: 'no-store',
-        headers: { Accept: 'application/json' },
-        signal: AbortSignal.timeout(45000)
-      });
-      if (!response.ok) throw new Error(`CelesTrak HTTP ${response.status}`);
+      const directUrl = 'https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=JSON';
+      const urls = apiRoot ? [\`\${apiRoot}/api/satellites/active\`, directUrl] : [directUrl];
+      let response: Response | null = null;
+      let fetchError: unknown = null;
+      for (const url of urls) {
+        try {
+          const candidate = await fetch(url, {
+            cache: 'no-store',
+            headers: { Accept: 'application/json' },
+            signal: AbortSignal.timeout(45000)
+          });
+          if (candidate.ok) { response = candidate; break; }
+          fetchError = new Error(\`Catálogo orbital HTTP \${candidate.status}\`);
+        } catch (error) {
+          fetchError = error;
+        }
+      }
+      if (!response) throw fetchError || new Error('No se pudo cargar el catálogo orbital');
       const payload = await response.json();
       if (!Array.isArray(payload) || !payload.length) throw new Error('El catálogo orbital llegó vacío o con formato inesperado.');
       await writeCache(payload);
