@@ -188,6 +188,22 @@
 
       <section id="camera-tools" class="cctv-panel" hidden aria-label="Cámaras públicas de tránsito"><div class="cctv-head"><strong>📷 CCTV MESH · FUENTES OFICIALES</strong><span id="cctv-status">Desactivado</span></div><div class="cctv-actions"><button type="button" id="cctv-nearest" class="mini-btn">◎ NEAREST</button><button type="button" id="cctv-viewshed" class="mini-btn" aria-pressed="false">◉ VIEWSHED</button><button type="button" id="cctv-reload" class="mini-btn">↻ Actualizar</button></div><div class="cctv-region-title">REGIONES</div><div id="cctv-regions" class="cctv-regions"></div><div id="cctv-details" class="cctv-details">Seleccioná una cámara para ver su ficha y calibrar su orientación.</div><small class="muted">Solo snapshots públicos de tráfico. Las orientaciones y volúmenes de cobertura son estimaciones editables, no vigilancia certificada. La disponibilidad y licencia se verifican por fuente.</small></section>
 
+      <button data-layer="earthquakes" class="layer" id="btn-earthquakes">
+        <span class="layer-icon">🌋</span>
+        <span class="layer-info"><strong>SISMOS Y TERREMOTOS</strong><small id="earthquakes-status">USGS · últimos eventos globales</small></span>
+        <span class="layer-state">OFF</span>
+      </button>
+      <button data-layer="weather" class="layer" id="btn-weather">
+        <span class="layer-icon">🌦️</span>
+        <span class="layer-info"><strong>CLIMA Y TORMENTAS</strong><small id="weather-status">Open-Meteo · punto central del globo</small></span>
+        <span class="layer-state">OFF</span>
+      </button>
+      <button data-layer="natural" class="layer" id="btn-natural">
+        <span class="layer-icon">🌪️</span>
+        <span class="layer-info"><strong>MONITOR AMBIENTAL GLOBAL</strong><small id="natural-status">NASA EONET · incendios, tormentas e inundaciones</small></span>
+        <span class="layer-state">OFF</span>
+      </button>
+
       <!-- Contextual Hint Banner -->
       <div class="hint" id="hint">
         Arrastrá el cursor o dedo para rotar la Tierra. Usá la rueda o pellizco para zoom. Activá TRÁFICO AÉREO para desplegar aeronaves ADS-B en vivo.
@@ -203,6 +219,9 @@
       <button type="button" class="dock-item" data-shortcut-layer="satellites"><span>🚀</span><small>Naves</small></button>
       <button type="button" class="dock-item" data-shortcut-layer="military"><span>🛡️</span><small>Bases</small></button>
       <button type="button" class="dock-item" data-shortcut-layer="cameras"><span>📷</span><small>Cámaras</small></button>
+      <button type="button" class="dock-item" data-shortcut-layer="weather"><span>🌦️</span><small>Clima</small></button>
+      <button type="button" class="dock-item" data-shortcut-layer="earthquakes"><span>🌋</span><small>Sismos</small></button>
+      <button type="button" class="dock-item" data-shortcut-layer="natural"><span>🌪️</span><small>Ambiental</small></button>
     </nav>
 \n    <!-- Bottom Status Bar -->
     <footer>
