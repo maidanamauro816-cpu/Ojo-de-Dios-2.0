@@ -122,7 +122,7 @@ async function checkOfficialWarnings(seen, center, radiusKm) {
 }
 
 function xmlText(block, tag) {
-  const match = block.match(new RegExp('<' + tag + '(?:\s[^>]*)?>([\s\S]*?)</' + tag + '>', 'i'));
+  const match = block.match(new RegExp('<' + tag + '(?:\\s[^>]*)?>([\\s\\S]*?)</' + tag + '>', 'i'));
   return match ? match[1].replace(/<!\[CDATA\[|\]\]>/g, '').replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').trim() : '';
 }
 function pointInPolygon(point, polygon) {
