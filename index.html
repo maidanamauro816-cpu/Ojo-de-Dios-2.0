@@ -249,18 +249,21 @@
 
 
     <!-- Barra inferior de capas rápidas -->
+    <div id="environment-dock" class="environment-dock" hidden aria-label="Capas ambientales">
+      <button type="button" class="dock-item" data-shortcut-layer="earthquakes"><span>🌋</span><small>Sismos</small></button>
+      <button type="button" class="dock-item" data-shortcut-layer="weather"><span>⛈️</span><small>Tormentas</small></button>
+      <button type="button" class="dock-item" data-shortcut-layer="clouds"><span>☁️</span><small>Nubes</small></button>
+      <button type="button" class="dock-item" data-shortcut-layer="precipitation"><span>🌧️</span><small>Lluvia</small></button>
+      <button type="button" class="dock-item" data-shortcut-layer="natural"><span>🌪️</span><small>Eventos</small></button>
+    </div>
     <nav class="layer-dock" aria-label="Capas del globo">
       <button type="button" class="dock-item" data-shortcut-layer="satellites"><span>🛰️</span><small>Satélites</small></button>
       <button type="button" class="dock-item" data-shortcut-layer="ships"><span>🚢</span><small>Barcos</small></button>
       <button type="button" class="dock-item" data-shortcut-layer="flights"><span>✈️</span><small>Aviones</small></button>
-      <button type="button" class="dock-item" data-shortcut-layer="satellites"><span>🚀</span><small>Naves</small></button>
       <button type="button" class="dock-item" data-shortcut-layer="military"><span>🛡️</span><small>Bases</small></button>
       <button type="button" class="dock-item" data-shortcut-layer="cameras"><span>📷</span><small>Cámaras</small></button>
       <button type="button" class="dock-item" data-shortcut-layer="weather"><span>🌦️</span><small>Clima</small></button>
-      <button type="button" class="dock-item" data-shortcut-layer="earthquakes"><span>🌋</span><small>Sismos</small></button>
-      <button type="button" class="dock-item" data-shortcut-layer="natural"><span>🌪️</span><small>Ambiental</small></button>
-      <button type="button" class="dock-item" data-shortcut-layer="clouds"><span>☁️</span><small>Nubes</small></button>
-      <button type="button" class="dock-item" data-shortcut-layer="precipitation"><span>🌧️</span><small>Lluvia</small></button>
+      <button type="button" class="dock-item" id="environment-dock-toggle" aria-expanded="false"><span>🌍</span><small>Ambiental</small></button>
     </nav>
 \n    <!-- Bottom Status Bar -->
     <footer>
