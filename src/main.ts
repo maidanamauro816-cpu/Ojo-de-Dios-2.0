@@ -1221,6 +1221,13 @@ document.querySelectorAll<HTMLElement>('[data-security-filter]').forEach((button
     const category = button.dataset.securityFilter || '';
     document.querySelectorAll<HTMLElement>('[data-security-filter]').forEach((item) => item.classList.remove('active'));
     button.classList.add('active');
+    const keepMilitary = category !== 'police';
+    ['iss','satellites','flights','ships','cameras','earthquakes','weather','natural','clouds','precipitation'].forEach((key) => {
+      if (layerStates[key]) document.querySelector<HTMLElement>(`#main-panel [data-layer="${key}"]`)?.click();
+    });
+    if (!keepMilitary && layerStates.military) {
+      document.getElementById('btn-military')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    }
     if (category === 'police') {
       await loadPublicPoliceFacilities();
       return;
