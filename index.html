@@ -198,6 +198,22 @@
         <span class="layer-info"><strong>CLIMA Y TORMENTAS</strong><small id="weather-status">Open-Meteo · punto central del globo</small></span>
         <span class="layer-state">OFF</span>
       </button>
+      <div class="weather-global-controls">
+        <strong>METEOROLOGÍA GLOBAL · NASA</strong>
+        <label for="weather-date">Fecha de observación (UTC)</label>
+        <input id="weather-date" type="date" />
+        <small id="global-weather-status">NASA GIBS · capas satelitales bajo demanda</small>
+      </div>
+      <button data-layer="clouds" class="layer" id="btn-clouds">
+        <span class="layer-icon">☁️</span>
+        <span class="layer-info"><strong>NUBOSIDAD SATELITAL GLOBAL</strong><small>NASA VIIRS · imagen satelital con nubes</small></span>
+        <span class="layer-state">OFF</span>
+      </button>
+      <button data-layer="precipitation" class="layer" id="btn-precipitation">
+        <span class="layer-icon">🌧️</span>
+        <span class="layer-info"><strong>PRECIPITACIONES GLOBALES</strong><small>NASA GPM IMERG · intensidad de lluvia</small></span>
+        <span class="layer-state">OFF</span>
+      </button>
       <button data-layer="natural" class="layer" id="btn-natural">
         <span class="layer-icon">🌪️</span>
         <span class="layer-info"><strong>MONITOR AMBIENTAL GLOBAL</strong><small id="natural-status">NASA EONET · incendios, tormentas e inundaciones</small></span>
@@ -224,6 +240,8 @@
       <button type="button" class="dock-item" data-shortcut-layer="weather"><span>🌦️</span><small>Clima</small></button>
       <button type="button" class="dock-item" data-shortcut-layer="earthquakes"><span>🌋</span><small>Sismos</small></button>
       <button type="button" class="dock-item" data-shortcut-layer="natural"><span>🌪️</span><small>Ambiental</small></button>
+      <button type="button" class="dock-item" data-shortcut-layer="clouds"><span>☁️</span><small>Nubes</small></button>
+      <button type="button" class="dock-item" data-shortcut-layer="precipitation"><span>🌧️</span><small>Lluvia</small></button>
     </nav>
 \n    <!-- Bottom Status Bar -->
     <footer>
