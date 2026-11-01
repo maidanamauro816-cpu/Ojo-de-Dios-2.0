@@ -510,7 +510,8 @@ const militaryBases = [
   { name: 'Fuerte Bragg (Fort Liberty)', lat: 35.1415, lon: -79.0060, label: '🪖 FORT LIBERTY (CAROLINA DEL NORTE)', kind: 'Base terrestre', desc: 'Una de las mayores instalaciones militares del Ejército de EE. UU., en Carolina del Norte.' },
   { name: 'Base Aérea de Groom Lake (Área 51)', lat: 37.2431, lon: -115.7930, label: '🛩️ ÁREA 51 (NEVADA)', kind: 'Base aérea', desc: 'Instalación de pruebas de vuelo de la Fuerza Aérea de EE. UU. en el desierto de Nevada.' },
   { name: 'Base Aeronaval de Puerto Belgrano', lat: -38.9108, lon: -62.1050, label: '⚓ PUERTO BELGRANO (ARGENTINA)', kind: 'Base naval', desc: 'Principal base naval de la Armada Argentina, en Punta Alta, provincia de Buenos Aires.' },
-  { name: 'Base Aérea Militar de Río Cuarto', lat: -33.0794, lon: -64.2611, label: '✈️ RÍO CUARTO (ARGENTINA)', kind: 'Base aérea', desc: 'Base de la IV Brigada Aérea de la Fuerza Aérea Argentina, en Córdoba.' }
+  { name: 'Base Aérea Militar de Río Cuarto', lat: -33.0794, lon: -64.2611, label: '✈️ RÍO CUARTO (ARGENTINA)', kind: 'Base aérea', desc: 'Base de la IV Brigada Aérea de la Fuerza Aérea Argentina, en Córdoba.' },
+  { name: 'Prefectura Naval Argentina · Edificio Guardacostas', lat: -34.6082, lon: -58.3701, label: '⚓ PREFECTURA NAVAL ARGENTINA', kind: 'Prefectura', desc: 'Sede central pública de la Prefectura Naval Argentina, Ciudad Autónoma de Buenos Aires.' }
 ];
 
 const militaryColor = (kind: string) => {
@@ -1089,6 +1090,152 @@ document.querySelectorAll('[data-layer]').forEach((btn) => {
     });
   });
 });
+
+// Menú de configuración superior: capas ambientales, instalaciones públicas y alerta GPS.
+const settingsMenu = document.getElementById('settings-menu');
+const settingsToggle = document.getElementById('settings-menu-toggle');
+const settingsLocationToggle = document.getElementById('settings-location-toggle');
+const settingsLocationStatus = document.getElementById('settings-location-status');
+const securityDataStatus = document.getElementById('security-data-status');
+const policeEntities: any[] = [];
+
+function clearPoliceEntities() {
+  policeEntities.forEach((entity) => viewer.entities.remove(entity));
+  policeEntities.length = 0;
+}
+
+async function loadPublicPoliceFacilities() {
+  clearPoliceEntities();
+  if (securityDataStatus) securityDataStatus.textContent = 'Buscando dependencias policiales públicas de OpenStreetMap en el área visible…';
+  const rectangle = viewer.camera.computeViewRectangle(Cesium.Ellipsoid.WGS84);
+  if (!rectangle) {
+    if (securityDataStatus) securityDataStatus.textContent = 'No se pudo calcular el área visible del globo.';
+    return;
+  }
+  const south = Cesium.Math.toDegrees(rectangle.south);
+  const west = Cesium.Math.toDegrees(rectangle.west);
+  const north = Cesium.Math.toDegrees(rectangle.north);
+  const east = Cesium.Math.toDegrees(rectangle.east);
+  const bbox = [south, west, north, east].join(',');
+  const query = '[out:json][timeout:20];(node["amenity"="police"](' + bbox + ');way["amenity"="police"](' + bbox + ');relation["amenity"="police"](' + bbox + '););out center tags 2000;';
+  try {
+    const response = await fetch('https://overpass-api.de/api/interpreter', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+      body: 'data=' + encodeURIComponent(query)
+    });
+    if (!response.ok) throw new Error('OpenStreetMap HTTP ' + response.status);
+    const data = await response.json();
+    for (const item of (data.elements || []).slice(0, 2000)) {
+      const lat = Number(item.lat ?? item.center?.lat);
+      const lon = Number(item.lon ?? item.center?.lon);
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue;
+      const tags = item.tags || {};
+      const name = tags.name || tags['name:es'] || tags.operator || 'Dependencia policial';
+      policeEntities.push(viewer.entities.add({
+        name,
+        position: Cesium.Cartesian3.fromDegrees(lon, lat, 25),
+        point: { pixelSize: 7, color: Cesium.Color.fromCssColorString('#60a5fa'), outlineColor: Cesium.Color.WHITE, outlineWidth: 1 },
+        label: {
+          text: '🚓 ' + name,
+          font: '10px sans-serif',
+          fillColor: Cesium.Color.WHITE,
+          outlineColor: Cesium.Color.BLACK,
+          outlineWidth: 2,
+          style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+          pixelOffset: new Cesium.Cartesian2(0, -14),
+          scaleByDistance: new Cesium.NearFarScalar(1e5, 1, 8e6, 0.25)
+        },
+        description: '<p>Dependencia policial registrada públicamente en OpenStreetMap.</p><p>Tipo: ' +
+          String(tags.police || tags.amenity || 'police').replace(/[<>]/g, '') + '</p>'
+      }));
+    }
+    if (securityDataStatus) securityDataStatus.textContent = policeEntities.length +
+      ' dependencias públicas encontradas en el área visible. Fuente: OpenStreetMap; la cobertura depende de los datos locales.';
+  } catch (error) {
+    console.warn('No se pudieron cargar dependencias policiales públicas:', error);
+    if (securityDataStatus) securityDataStatus.textContent = 'La fuente pública no respondió. Probá nuevamente más tarde o acercá el globo a otra región.';
+  }
+}
+
+function showMilitaryCategory(category: string) {
+  const militaryButton = document.getElementById('btn-military') as HTMLButtonElement | null;
+  if (!layerStates.military && militaryButton) militaryButton.click();
+  const matches = (base: any) => {
+    if (category === 'prefectura') return base.kind === 'Prefectura';
+    if (category === 'naval') return base.kind === 'Base naval';
+    if (category === 'army') return base.kind === 'Base terrestre' || base.kind === 'Base conjunta';
+    if (category === 'air') return base.kind === 'Base aérea';
+    return false;
+  };
+  militaryEntities.forEach((entity, index) => { entity.show = matches(militaryBases[index]); });
+  if (securityDataStatus) {
+    const count = militaryBases.filter(matches).length;
+    securityDataStatus.textContent = count + ' instalaciones públicas documentadas en esta categoría. No representa un inventario mundial completo.';
+  }
+}
+
+if (settingsToggle && settingsMenu) {
+  settingsToggle.addEventListener('click', () => {
+    settingsMenu.hidden = !settingsMenu.hidden;
+    settingsToggle.setAttribute('aria-expanded', String(!settingsMenu.hidden));
+  });
+  document.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.settings-menu-wrap')) {
+      settingsMenu.hidden = true;
+      settingsToggle.setAttribute('aria-expanded', 'false');
+    }
+  });
+}
+
+document.querySelectorAll<HTMLElement>('[data-config-layer]').forEach((button) => {
+  button.addEventListener('click', () => {
+    const layer = button.dataset.configLayer;
+    const target = layer ? document.querySelector<HTMLElement>(`#main-panel [data-layer="${layer}"]`) : null;
+    if (target) {
+      const enabled = Boolean(layerStates[layer || '']);
+      if (!enabled) {
+        const exclusive = ['iss','satellites','flights','ships','cameras','military','earthquakes','weather','natural','clouds','precipitation'];
+        exclusive.filter((key) => key !== layer).forEach((key) => {
+          if (layerStates[key]) document.querySelector<HTMLElement>(`#main-panel [data-layer="${key}"]`)?.click();
+        });
+      }
+      target.click();
+      button.classList.toggle('active', Boolean(layerStates[layer || '']));
+    }
+  });
+});
+
+document.querySelectorAll<HTMLElement>('[data-security-filter]').forEach((button) => {
+  button.addEventListener('click', async () => {
+    const category = button.dataset.securityFilter || '';
+    document.querySelectorAll<HTMLElement>('[data-security-filter]').forEach((item) => item.classList.remove('active'));
+    button.classList.add('active');
+    if (category === 'police') {
+      await loadPublicPoliceFacilities();
+      return;
+    }
+    clearPoliceEntities();
+    showMilitaryCategory(category);
+  });
+});
+
+if (settingsLocationToggle) {
+  settingsLocationToggle.addEventListener('click', () => locationToggle?.click());
+}
+if (settingsLocationStatus) {
+  const syncSettingsLocation = () => {
+    const enabled = localStorage.getItem('ojo-alerts-enabled') === 'true';
+    settingsLocationToggle && (settingsLocationToggle.textContent = enabled ? '📍 Desactivar mi ubicación' : '📍 Activar mi ubicación');
+    settingsLocationStatus.textContent = enabled
+      ? 'GPS activo. Alertas cercanas habilitadas según permisos y fuentes disponibles.'
+      : 'Ubicación desactivada. Activala para recibir avisos cercanos.';
+  };
+  syncSettingsLocation();
+  locationToggle?.addEventListener('click', () => window.setTimeout(syncSettingsLocation, 500));
+  settingsLocationToggle?.addEventListener('click', () => window.setTimeout(syncSettingsLocation, 500));
+}
 
 // Barra inferior: cada botón controla una capa real y mantiene las capas dinámicas separadas.
 document.querySelectorAll<HTMLElement>('[data-shortcut-layer]').forEach((shortcut) => {
