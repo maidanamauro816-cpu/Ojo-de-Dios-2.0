@@ -27,19 +27,23 @@ async function alertOnce(seen, key, title, body, extra = {}) {
     extra
   });
 }
-async function checkQuakes(seen) {
+function distanceKm(a, b) { const r = Math.PI / 180, dLat = (b.latitude - a.latitude) * r, dLon = (b.longitude - a.longitude) * r; const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.latitude * r) * Math.cos(b.latitude * r) * Math.sin(dLon / 2) ** 2; return 6371 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h)); }
+async function getAlertCenter() { try { const p = await CapacitorGeolocation.getCurrentPosition(); return { latitude: Number(p.latitude), longitude: Number(p.longitude) }; } catch { return null; } }
+async function checkQuakes(seen, center) {
   const data = await json(SOURCES.quakes);
   for (const quake of data.features || []) {
     const p = quake.properties || {}, c = quake.geometry?.coordinates || [];
     const lon = Number(c[0]), lat = Number(c[1]), depth = Number(c[2]), mag = Number(p.mag);
-    if (![lon, lat, depth, mag].every(Number.isFinite) || mag < 5.5) continue;
+    if (![lon, lat, depth, mag].every(Number.isFinite)) continue;
+    const nearby = center && distanceKm(center, { latitude: lat, longitude: lon }) <= 1000;
+    if (mag < 5.5 && !(nearby && mag >= 3.0)) continue;
     await alertOnce(seen, 'usgs:' + quake.id,
       '🚨 SISMO M' + mag.toFixed(1) + ' · ' + (p.place || 'Ubicación no informada'),
       'Profundidad ' + depth.toFixed(1) + ' km · ' + new Date(p.time).toLocaleString() + ' · Fuente USGS',
       { kind: 'earthquake', lat, lon, magnitude: mag, eventId: quake.id });
   }
 }
-async function checkNaturalEvents(seen) {
+async function checkNaturalEvents(seen, center) {
   const data = await json(SOURCES.eonet);
   const allowed = new Set(['severeStorms', 'wildfires', 'volcanoes', 'floods']);
   for (const event of data.events || []) {
@@ -49,6 +53,7 @@ async function checkNaturalEvents(seen) {
     const point = [...geometry].reverse().find(g => g.type === 'Point' && Array.isArray(g.coordinates));
     const lon = point ? Number(point.coordinates[0]) : null;
     const lat = point ? Number(point.coordinates[1]) : null;
+    if (center && Number.isFinite(lat) && Number.isFinite(lon) && distanceKm(center, { latitude: lat, longitude: lon }) > 1200) continue;
     const category = categories.map(c => c.title || c.id).join(', ');
     await alertOnce(seen, 'eonet:' + event.id,
       '🌍 ALERTA NATURAL · ' + (event.title || category),
@@ -97,7 +102,8 @@ async function checkOfficialWarnings(seen) {
 addEventListener('checkDisasters', async (resolve, reject) => {
   try {
     const seen = await loadSeen();
-    const results = await Promise.allSettled([checkQuakes(seen), checkNaturalEvents(seen), checkTropicalStorms(seen), checkOfficialWarnings(seen)]);
+    const center = await getAlertCenter();
+    const results = await Promise.allSettled([checkQuakes(seen, center), checkNaturalEvents(seen, center), checkTropicalStorms(seen), checkOfficialWarnings(seen)]);
     CapacitorKV.set(KEY, JSON.stringify([...seen].slice(-1500)));
     const failures = results.filter(x => x.status === 'rejected');
     if (failures.length) console.warn('Fuentes de alertas con error:', failures.length);
