@@ -67,10 +67,37 @@ async function checkTropicalStorms(seen) {
       { kind: 'tropical-storm', lat: Number.isFinite(lat) ? lat : null, lon: Number.isFinite(lon) ? lon : null, eventId: String(id) });
   }
 }
+
+function firstPoint(value) {
+  if (!Array.isArray(value)) return null;
+  if (value.length >= 2 && typeof value[0] === 'number' && typeof value[1] === 'number') return value;
+  for (const child of value) { const point = firstPoint(child); if (point) return point; }
+  return null;
+}
+async function checkOfficialWarnings(seen) {
+  const response = await fetch('https://api.weather.gov/alerts/active?status=actual&message_type=alert', {
+    method: 'GET',
+    headers: { Accept: 'application/geo+json', 'User-Agent': 'Ojo-de-Dios-2.0 public safety alerts' }
+  });
+  if (!response.ok) throw new Error('NWS alerts HTTP ' + response.status);
+  const data = await response.json();
+  const accepted = new Set(['Tornado Warning', 'Severe Thunderstorm Warning', 'Flash Flood Warning', 'Hurricane Warning', 'Tropical Storm Warning']);
+  for (const feature of data.features || []) {
+    const p = feature.properties || {};
+    if (!accepted.has(p.event)) continue;
+    const point = firstPoint(feature.geometry?.coordinates);
+    const lon = point ? Number(point[0]) : null, lat = point ? Number(point[1]) : null;
+    await alertOnce(seen, 'nws:' + (feature.id || p.id || p.sent),
+      '⚠️ ' + p.event.toUpperCase() + ' · ' + (p.areaDesc || 'Alerta oficial'),
+      (p.headline || p.description || p.event) + ' · Servicio Meteorológico Nacional de EE. UU.',
+      { kind: 'official-weather-warning', lat: Number.isFinite(lat) ? lat : null, lon: Number.isFinite(lon) ? lon : null, eventId: feature.id || p.id });
+  }
+}
+
 addEventListener('checkDisasters', async (resolve, reject) => {
   try {
     const seen = await loadSeen();
-    const results = await Promise.allSettled([checkQuakes(seen), checkNaturalEvents(seen), checkTropicalStorms(seen)]);
+    const results = await Promise.allSettled([checkQuakes(seen), checkNaturalEvents(seen), checkTropicalStorms(seen), checkOfficialWarnings(seen)]);
     CapacitorKV.set(KEY, JSON.stringify([...seen].slice(-1500)));
     const failures = results.filter(x => x.status === 'rejected');
     if (failures.length) console.warn('Fuentes de alertas con error:', failures.length);
