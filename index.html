@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#030812" />
+  <title>Ojo de Dios 2.0</title>
+  <meta name="description" content="Globo 3D educativo de exploración geoespacial: satélites, vuelos comerciales ADS-B en vivo e instalaciones estratégicas y militares de ubicación pública." />
+  <meta property="og:title" content="Ojo de Dios 2.0" />
+  <meta property="og:description" content="Globo 3D educativo de exploración geoespacial: satélites, vuelos comerciales ADS-B en vivo e instalaciones estratégicas y militares de ubicación pública." />
+  
+  <!-- CesiumJS Official Engine CDN -->
+  <link rel="stylesheet" href="https://cesium.com/downloads/cesiumjs/releases/1.123/Build/Cesium/Widgets/widgets.css">
+  <script>window.CESIUM_BASE_URL='https://cesium.com/downloads/cesiumjs/releases/1.123/Build/Cesium/';</script>
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.123/Build/Cesium/Cesium.js"></script>
+  
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+  <main id="app">
+    <!-- Topbar Header -->
+    <header class="topbar">
+      <div class="brand-group">
+        <div class="brand">
+          <span class="brand-icon">⬡</span>
+          OJO DE DIOS <span class="accent">2.0</span>
+        </div>
+        <div class="subtitle">SISTEMA GEOESPACIAL DE INTELIGENCIA GLOBAL</div>
+      </div>
+
+      <div class="header-center">
+        <div class="time-badge" id="utc-clock">00:00:00 UTC</div>
+        <div class="live-indicator">
+          <span class="live-pulse"></span>
+          <span>SISTEMA ACTIVO · VISTA 3D</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Quick Jump Selector -->
+        <select id="jump-preset" aria-label="Saltar a coordenada objetivo" class="tactical-select">
+          <option value="" disabled selected>🎯 Saltar a objetivo...</option>
+          <option value="-34.6037,-58.3816,800000">Buenos Aires, ARG</option>
+          <option value="40.7128,-74.0060,800000">Nueva York, EE.UU.</option>
+          <option value="51.5074,-0.1278,800000">Londres, Reino Unido</option>
+          <option value="35.6762,139.6503,800000">Tokio, Japón</option>
+          <option value="62.39,-145.15,600000">HAARP · Gakona, Alaska</option>
+          <option value="46.2333,6.0500,400000">CERN · Ginebra, Suiza</option>
+          <option value="78.2380,15.4480,500000">Bóveda del Fin del Mundo, Svalbard</option>
+          <option value="28.5729,-80.6490,450000">Centro Espacial Kennedy, Florida</option>
+          <option value="-33.8688,151.2093,800000">Sídney, Australia</option>
+        </select>
+        <button id="toggle-sun" class="tactical-btn" title="Alternar iluminación solar día/noche">☀️ Sol</button>
+        <button id="reset-cam" class="tactical-btn" title="Restablecer vista orbital">🌍 Órbita</button>
+      </div>
+    </header>
+
+    <!-- 3D Globe Viewport -->
+    <section id="globe" aria-label="Globo terráqueo 3D interactivo"></section>
+
+    <!-- Sidebar Control Intelligence Panel -->
+    <aside class="panel" id="main-panel">
+      <div class="panel-header">
+        <span class="panel-title">CAPAS Y FEEDS DE DATOS</span>
+        <span class="panel-badge" id="layer-active-count">3 ACTIVAS</span>
+      </div>
+
+      <!-- Layers toggles -->
+      <div class="layers-container">
+        <button data-layer="iss" class="layer active" id="btn-iss">
+          <span class="layer-icon">🛰</span>
+          <span class="layer-info">
+            <strong>ISS · ESTACIÓN ESPACIAL</strong>
+            <small id="sat-status">Calculando órbita TLE…</small>
+          </span>
+          <span class="layer-state">ON</span>
+        </button>
+
+        <button data-layer="satellites" class="layer" id="btn-satellites">
+          <span class="layer-icon">🛰️</span>
+          <span class="layer-info">
+            <strong>FLOTA ORBITAL (TIANGONG / HUBBLE)</strong>
+            <small id="fleet-status">Estaciones orbitales de investigación</small>
+          </span>
+          <span class="layer-state">OFF</span>
+        </button>
+
+        <button data-layer="haarp" class="layer active" id="btn-haarp">
+          <span class="layer-icon">📡</span>
+          <span class="layer-info">
+            <strong>HAARP · ALASKA</strong>
+            <small>Instalación ionosférica terrestre (Gakona)</small>
+          </span>
+          <span class="layer-state">ON</span>
+        </button>
+
+        <button data-layer="strategic" class="layer active" id="btn-strategic">
+          <span class="layer-icon">🏛️</span>
+          <span class="layer-info">
+            <strong>BASES ESTRATÉGICAS GLOBALES</strong>
+            <small>CERN LHC, Svalbard Vault, Kennedy Space Center</small>
+          </span>
+          <span class="layer-state">ON</span>
+        </button>
+
+        <button data-layer="flights" class="layer" id="btn-flights">
+          <span class="layer-icon">✈</span>
+          <span class="layer-info">
+            <strong>TRÁFICO AÉREO EN VIVO (ADS-B)</strong>
+            <small id="flight-status">Desactivado · clic para conectar</small>
+          </span>
+          <span class="layer-state">OFF</span>
+        </button>
+
+        <button data-layer="military" class="layer active" id="btn-military">
+          <span class="layer-icon">🪖</span>
+          <span class="layer-info">
+            <strong>BASES MILITARES, NAVALES Y AÉREAS</strong>
+            <small>Instalaciones de ubicación públicamente documentada</small>
+          </span>
+          <span class="layer-state">ON</span>
+        </button>
+
+        <button data-layer="ships" class="layer" id="btn-ships">
+          <span class="layer-icon">🚢</span>
+          <span class="layer-info">
+            <strong>TRÁFICO MARÍTIMO (AIS)</strong>
+            <small>Red abierta de telemetría naval</small>
+          </span>
+          <span class="layer-state">OFF</span>
+        </button>
+      </div>
+
+      <!-- ADS-B Flights Controller Tool -->
+      <div id="flight-tools" class="flight-tools" hidden>
+        <div class="flight-tools-head">
+          <span>RADAR ADS-B LOCAL</span>
+          <div class="flight-controls-row">
+            <select id="flight-radius" class="mini-select" title="Radio de exploración">
+              <option value="100">100 NM (~185 km)</option>
+              <option value="250" selected>250 NM (~463 km)</option>
+            </select>
+            <button id="refresh-flights" type="button" class="mini-btn">↻ Actualizar</button>
+          </div>
+        </div>
+
+        <input type="text" id="flight-filter" class="search-input" placeholder="🔍 Filtrar por vuelo / matrícula / ICAO..." />
+
+        <div id="flight-list" class="flight-list">
+          <span class="muted">Cargando radar ADS-B…</span>
+        </div>
+
+        <!-- Selected Aircraft Dossier -->
+        <section id="aircraft-detail" class="aircraft-detail" hidden>
+          <div class="detail-header-bar">
+            <span class="detail-heading">FICHA DE INTELIGENCIA DE AERONAVE</span>
+            <button type="button" id="close-detail" class="close-btn" title="Cerrar ficha">×</button>
+          </div>
+          <div id="aircraft-detail-content" class="detail-content"></div>
+        </section>
+
+        <small class="coverage-note">
+          Cobertura consultada en radio de escaneo centrado en el punto visible del globo terráqueo. Desplazá o hacé zoom en el globo para escanear otras zonas.
+        </small>
+      </div>
+
+      <!-- Marine Traffic Modal / Box -->
+      <div id="marine-tools" class="marine-tools" hidden>
+        <div class="marine-card">
+          <div class="marine-card-title">📡 TELEMETRÍA AIS MARÍTIMA</div>
+          <p>
+            El monitoreo marítimo global opera a través de transpondedores AIS en frecuencias VHF marítimas y constelaciones LEO.
+          </p>
+          <div class="marine-status-tag">ESTADO: MODO OBSERVACIÓN LISTO</div>
+          <small class="muted">Para vincular un flujo dedicado AIS de pago o antena local NMEA, configure el canal en settings.</small>
+        </div>
+      </div>
+
+      <!-- Contextual Hint Banner -->
+      <div class="hint" id="hint">
+        Arrastrá el cursor o dedo para rotar la Tierra. Usá la rueda o pellizco para zoom. Activá TRÁFICO AÉREO para desplegar aeronaves ADS-B en vivo.
+      </div>
+    </aside>
+
+    <!-- Bottom Status Bar -->
+    <footer>
+      <div class="status-left">
+        <span class="status-dot"></span>
+        <span id="coords">CENTRO: 0.00°, 0.00°</span>
+        <span class="divider">|</span>
+        <span id="altitude-hud">ALT: 24,500 km</span>
+      </div>
+      <div class="status-right">
+        <span>OJO DE DIOS 2.0 · CESIUM 3D · DATOS PÚBLICOS ABIERTOS</span>
+      </div>
+    </footer>
+  </main>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "name": "ojo-de-dios-2.0",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port=3000 --host=0.0.0.0",
+    "build": "vite build",
+    "lint": "tsc --noEmit",
+    "cap:sync": "cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.3",
+    "@capacitor/core": "^6.2.3",
+    "satellite.js": "^6.0.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.2.3",
+    "@types/node": "^22.10.1",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.3"
+  }
+}

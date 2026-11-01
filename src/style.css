@@ -1,0 +1,645 @@
+:root {
+  color-scheme: dark;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: #030812;
+  color: #e2e8f0;
+  --bg-panel: rgba(5, 14, 28, 0.88);
+  --border-cyan: rgba(56, 189, 248, 0.28);
+  --accent-cyan: #38bdf8;
+  --accent-emerald: #34d399;
+  --accent-amber: #fbbf24;
+  --text-muted: #94a3b8;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #app {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #030812;
+}
+
+/* Cesium Globe Canvas */
+#globe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* Cesium UI Overrides for Clean Look */
+.cesium-viewer-bottom {
+  bottom: 30px !important;
+  left: 10px !important;
+}
+
+.cesium-widget-credits {
+  font-size: 10px !important;
+  opacity: 0.7 !important;
+}
+
+.cesium-viewer-toolbar {
+  top: 76px !important;
+  right: 14px !important;
+}
+
+/* Header Topbar */
+.topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 68px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(180deg, rgba(3, 8, 18, 0.95) 0%, rgba(3, 8, 18, 0.75) 60%, rgba(3, 8, 18, 0) 100%);
+  z-index: 10;
+  pointer-events: auto;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.12);
+}
+
+.brand-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 2.5px;
+  color: #f8fafc;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand-icon {
+  color: var(--accent-cyan);
+  font-size: 20px;
+  filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.6));
+}
+
+.brand .accent {
+  color: var(--accent-cyan);
+  background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.header-center {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.time-badge {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  padding: 4px 10px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+}
+
+.live-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+  color: #e2e8f0;
+  background: rgba(6, 78, 59, 0.35);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.live-pulse {
+  width: 8px;
+  height: 8px;
+  background-color: var(--accent-emerald);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--accent-emerald);
+  animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7); }
+  70% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(52, 211, 153, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tactical-select, .tactical-btn {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid var(--border-cyan);
+  color: #e2e8f0;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.tactical-select:hover, .tactical-btn:hover {
+  background: rgba(30, 41, 59, 0.95);
+  border-color: var(--accent-cyan);
+  color: #fff;
+}
+
+.tactical-select option {
+  background: #09121d;
+  color: #e2e8f0;
+}
+
+/* Sidebar Intelligence Panel */
+.panel {
+  position: absolute;
+  top: 80px;
+  left: 18px;
+  width: 320px;
+  max-width: calc(100vw - 36px);
+  max-height: calc(100dvh - 120px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-cyan);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  padding: 14px;
+  z-index: 10;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(56, 189, 248, 0.3) transparent;
+}
+
+.panel::-webkit-scrollbar {
+  width: 4px;
+}
+.panel::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.3);
+  border-radius: 4px;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.18);
+}
+
+.panel-title {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--accent-cyan);
+}
+
+.panel-badge {
+  font-size: 9px;
+  font-weight: 700;
+  background: rgba(56, 189, 248, 0.15);
+  color: var(--accent-cyan);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+/* Layers Container & Buttons */
+.layers-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.layer {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.5);
+  color: #f1f5f9;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.layer:hover {
+  background: rgba(30, 41, 59, 0.7);
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+.layer.active {
+  background: rgba(12, 74, 110, 0.28);
+  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: inset 0 0 14px rgba(56, 189, 248, 0.1);
+}
+
+.layer-icon {
+  font-size: 18px;
+  width: 24px;
+  text-align: center;
+}
+
+.layer-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.layer-info strong {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.layer-info small {
+  display: block;
+  font-size: 9px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.layer-state {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #64748b;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+.layer.active .layer-state {
+  color: var(--accent-emerald);
+  border-color: rgba(52, 211, 153, 0.4);
+  background: rgba(6, 78, 59, 0.35);
+}
+
+/* Flight Tools Radar Panel */
+.flight-tools {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(56, 189, 248, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.flight-tools-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: var(--accent-cyan);
+}
+
+.flight-controls-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mini-select, .mini-btn {
+  background: #0f172a;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #e2e8f0;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 3px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.mini-btn:hover {
+  background: rgba(56, 189, 248, 0.2);
+  color: #fff;
+}
+
+.search-input {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 6px 10px;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 10px;
+  outline: none;
+}
+
+.search-input:focus {
+  border-color: var(--accent-cyan);
+}
+
+.flight-list {
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  background: rgba(7, 16, 29, 0.6);
+  padding: 4px;
+}
+
+.flight-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  background: transparent;
+  color: #e2e8f0;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.flight-row:hover, .flight-row.selected {
+  background: rgba(56, 189, 248, 0.18);
+}
+
+.flight-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--accent-cyan);
+  box-shadow: 0 0 6px var(--accent-cyan);
+  flex-shrink: 0;
+}
+
+.flight-row-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.flight-row-main strong {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.flight-row-main small {
+  display: block;
+  font-size: 8.5px;
+  color: var(--text-muted);
+}
+
+.flight-arrow {
+  color: var(--accent-cyan);
+  font-size: 14px;
+}
+
+.coverage-note {
+  font-size: 8px;
+  line-height: 1.4;
+  color: var(--text-muted);
+  padding: 4px 2px;
+}
+
+/* Aircraft Dossier Modal / Detail Box */
+.aircraft-detail {
+  margin-top: 8px;
+  border: 1px solid var(--border-cyan);
+  border-radius: 8px;
+  background: rgba(10, 24, 45, 0.95);
+  padding: 10px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.detail-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.25);
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+}
+
+.detail-heading {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: var(--accent-cyan);
+}
+
+.close-btn {
+  background: transparent;
+  border: 0;
+  color: var(--text-muted);
+  font-size: 16px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.close-btn:hover {
+  color: #fff;
+}
+
+.detail-title {
+  font-size: 15px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 1px;
+}
+
+.detail-subtitle {
+  font-size: 9px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.detail-section-title {
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--accent-cyan);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 6px 0 2px 0;
+  margin-top: 6px;
+  margin-bottom: 4px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 9px;
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.detail-row span {
+  color: var(--text-muted);
+}
+
+.detail-row b {
+  color: #f1f5f9;
+  text-align: right;
+  max-width: 60%;
+  word-break: break-all;
+}
+
+.detail-loading {
+  font-size: 8px;
+  color: var(--accent-amber);
+  margin-top: 6px;
+}
+
+/* Marine Tools */
+.marine-tools {
+  margin-top: 10px;
+  padding: 10px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 8px;
+}
+
+.marine-card-title {
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--accent-cyan);
+  margin-bottom: 4px;
+}
+
+.marine-card p {
+  font-size: 8.5px;
+  line-height: 1.4;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.marine-status-tag {
+  font-size: 8.5px;
+  font-weight: 700;
+  color: var(--accent-emerald);
+  margin-bottom: 4px;
+}
+
+/* Hint */
+.hint {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 9px;
+  line-height: 1.45;
+  color: #8da4be;
+}
+
+.muted {
+  font-size: 9px;
+  color: #64748b;
+  padding: 8px;
+  display: block;
+  text-align: center;
+}
+
+/* Bottom Footer HUD */
+footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 32px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(0deg, rgba(3, 8, 18, 0.95) 0%, rgba(3, 8, 18, 0.6) 100%);
+  border-top: 1px solid rgba(56, 189, 248, 0.12);
+  z-index: 10;
+  pointer-events: none;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 9.5px;
+  color: var(--text-muted);
+}
+
+.status-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+  box-shadow: 0 0 6px var(--accent-cyan);
+}
+
+.divider {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+/* Mobile adjustments */
+@media (max-width: 640px) {
+  .topbar {
+    height: 60px;
+    padding: 0 12px;
+  }
+  .brand {
+    font-size: 15px;
+  }
+  .header-center {
+    display: none;
+  }
+  .panel {
+    top: auto;
+    bottom: 38px;
+    left: 10px;
+    right: 10px;
+    width: auto;
+    max-width: none;
+    max-height: 50dvh;
+    padding: 10px;
+  }
+  .cesium-viewer-toolbar {
+    top: 68px !important;
+  }
+}
