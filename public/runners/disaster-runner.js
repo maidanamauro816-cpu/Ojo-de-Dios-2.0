@@ -190,18 +190,21 @@ addEventListener('saveAlertSettings', (resolve, reject, args) => {
 addEventListener('checkDisasters', async (resolve, reject) => {
   try {
     const settings = await getSettings();
-    if (settings.enabled !== true) { resolve(); return; }
     const radiusKm = Math.max(10, Math.min(1000, Number(settings.radiusKm) || 100));
     const seen = await loadSeen();
-    const center = await getAlertCenter(settings);
-    if (!center) { console.warn('Alertas cercanas activas, pero no hay una ubicación autorizada disponible.'); resolve(); return; }
-    const results = await Promise.allSettled([
-      checkQuakes(seen, center, radiusKm),
-      checkNaturalEvents(seen, center, radiusKm),
-      checkTropicalStorms(seen, center, radiusKm),
-      checkOfficialWarnings(seen, center, radiusKm),
-      checkSmnWarnings(seen, center)
-    ]);
+    // La detección sísmica mundial de gran magnitud funciona siempre, sin exigir GPS.
+    // La ubicación solo habilita los avisos regionales y meteorológicos cercanos.
+    const center = settings.enabled === true ? await getAlertCenter(settings) : null;
+    const checks = [checkQuakes(seen, center, radiusKm)];
+    if (settings.enabled === true && center) {
+      checks.push(
+        checkNaturalEvents(seen, center, radiusKm),
+        checkTropicalStorms(seen, center, radiusKm),
+        checkOfficialWarnings(seen, center, radiusKm),
+        checkSmnWarnings(seen, center)
+      );
+    }
+    const results = await Promise.allSettled(checks);
     CapacitorKV.set(KEY, JSON.stringify([...seen].slice(-1500)));
     const failures = results.filter(x => x.status === 'rejected');
     if (failures.length) console.warn('Fuentes de alertas con error:', failures.length);
