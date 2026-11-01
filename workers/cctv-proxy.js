@@ -259,12 +259,76 @@ async function getFrame(request, rawId) {
   });
 }
 
+
+async function getAisStream(request, env) {
+  if (request.headers.get('Upgrade') !== 'websocket') {
+    return new Response('Se requiere Upgrade: websocket', { status: 426, headers: corsHeaders() });
+  }
+  if (!env?.AISSTREAM_API_KEY) {
+    return new Response('Falta configurar AISSTREAM_API_KEY en el Worker', { status: 503, headers: corsHeaders() });
+  }
+  const query = new URL(request.url).searchParams;
+  const south = Number(query.get('south'));
+  const north = Number(query.get('north'));
+  const west = Number(query.get('west'));
+  const east = Number(query.get('east'));
+  if (![south, north, west, east].every(Number.isFinite) ||
+      south < -90 || north > 90 || south >= north ||
+      west < -180 || west > 180 || east < -180 || east > 180 || west === east) {
+    return new Response('Límites geográficos inválidos', { status: 400, headers: corsHeaders() });
+  }
+
+  const boxes = west < east
+    ? [[[north, west], [south, east]]]
+    : [[[north, west], [south, 180]], [[north, -180], [south, east]]];
+
+  const upstreamResponse = await fetch('https://stream.aisstream.io/v0/stream', {
+    method: 'GET',
+    headers: { Upgrade: 'websocket' }
+  });
+  const upstream = upstreamResponse.webSocket;
+  if (!upstream) {
+    return new Response('AISStream no aceptó la conexión WebSocket', { status: 502, headers: corsHeaders() });
+  }
+
+  const pair = new WebSocketPair();
+  const client = pair[0];
+  const server = pair[1];
+  upstream.accept({ allowHalfOpen: true });
+  server.accept({ allowHalfOpen: true });
+
+  upstream.send(JSON.stringify({
+    APIKey: env.AISSTREAM_API_KEY,
+    BoundingBoxes: boxes,
+    FilterMessageTypes: ['PositionReport', 'StandardClassBPositionReport', 'ExtendedClassBPositionReport', 'LongRangeAISBroadcastMessage']
+  }));
+
+  upstream.addEventListener('message', (event) => {
+    if (server.readyState === WebSocket.OPEN) server.send(event.data);
+  });
+  upstream.addEventListener('close', (event) => {
+    if (server.readyState < WebSocket.CLOSING) server.close(event.code || 1000, 'AIS upstream cerrado');
+  });
+  upstream.addEventListener('error', () => {
+    if (server.readyState < WebSocket.CLOSING) server.close(1011, 'Error de AISStream');
+  });
+  server.addEventListener('close', (event) => {
+    if (upstream.readyState < WebSocket.CLOSING) upstream.close(event.code || 1000, 'Cliente desconectado');
+  });
+  server.addEventListener('error', () => {
+    if (upstream.readyState < WebSocket.CLOSING) upstream.close(1011, 'Error del cliente');
+  });
+
+  return new Response(null, { status: 101, webSocket: client });
+}
+
 export default {
-  async fetch(request) {
+  async fetch(request, env) {
     const url = new URL(request.url);
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders() });
     if (request.method !== 'GET') return json({ error: 'Método no permitido' }, 405);
     try {
+      if (url.pathname === '/api/ais-stream') return await getAisStream(request, env);
       if (url.pathname === '/api/cctv/catalog') return await getCatalog(request);
       const match = /^\/api\/cctv-frame\/([^/]+)$/.exec(url.pathname);
       if (match) return await getFrame(request, match[1]);
