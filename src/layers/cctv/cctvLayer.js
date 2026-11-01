@@ -428,7 +428,7 @@ export function createCctvLayer({ viewer, Cesium, container }) {
 
   controls.nearest?.addEventListener('click', nearestCamera);
   controls.viewshed?.addEventListener('click', () => setViewshed(!state.showViewshed));
-  controls.reload?.addEventListener('click', () => { catalogLoadedAt = 0; void load(); });
+  controls.reload?.addEventListener('click', () => { void load(); });
 
   return {
     load,
