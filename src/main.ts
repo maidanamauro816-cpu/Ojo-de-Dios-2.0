@@ -2,6 +2,9 @@ import { twoline2satrec, propagate, gstime, eciToGeodetic, degreesLat, degreesLo
 import { createCctvLayer } from './layers/cctv/cctvLayer.js';
 import { createSatelliteLayer } from './layers/satellites/satelliteLayer.js';
 import { createMarineLayer } from './layers/marine/marineLayer.js';
+import { EarthquakeLayer } from './layers/EarthquakeLayer.js';
+import { WeatherLayer } from './layers/WeatherLayer.js';
+import { NaturalEventsLayer } from './layers/NaturalEventsLayer.js';
 
 declare const Cesium: any;
 
@@ -114,6 +117,18 @@ const cctvApiBase = (import.meta as any).env?.VITE_CCTV_API_BASE || '';
 const cctvLayer = createCctvLayer({ viewer, Cesium, container: $('camera-tools'), apiBase: cctvApiBase });
 const globalSatelliteLayer = createSatelliteLayer({ viewer, Cesium, apiBase: cctvApiBase, statusElement: $('satellite-status-pill') });
 const marineLayer = createMarineLayer({ viewer, Cesium, apiBase: cctvApiBase, statusElement: $('marine-status-pill') });
+const earthquakeLayer = new EarthquakeLayer(viewer, (state: any) => {
+  const el = $('earthquakes-status'); if (!el) return;
+  el.textContent = state.loading ? 'Consultando USGS…' : state.error ? state.error : state.count + ' sismos · últimas 24 h';
+});
+const weatherLayer = new WeatherLayer(viewer, (state: any) => {
+  const el = $('weather-status'); if (!el) return;
+  el.textContent = state.loading ? 'Consultando Open-Meteo…' : state.error ? state.error : state.temperature + ' °C · ' + (state.summary || 'clima actual');
+});
+const naturalEventsLayer = new NaturalEventsLayer(viewer, (state: any) => {
+  const el = $('natural-status'); if (!el) return;
+  el.textContent = state.loading ? 'Consultando NASA EONET…' : state.error ? state.error : state.count + ' eventos naturales · NASA';
+});
 
 // Optional Cesium ion Photorealistic 3D Tiles. Use a restricted ion token in
 // VITE_CESIUM_ION_TOKEN; without it the existing globe imagery remains active.
@@ -134,7 +149,10 @@ const layerStates: Record<string, boolean> = {
   military: true,
   flights: false,
   ships: false,
-  cameras: false
+  cameras: false,
+  earthquakes: false,
+  weather: false,
+  natural: false
 };
 
 function updateActiveLayerBadge() {
@@ -806,6 +824,21 @@ document.querySelectorAll('[data-layer]').forEach((btn) => {
       cctvLayer.setEnabled(layerStates.cameras);
       btn.classList.toggle('active', layerStates.cameras);
       btn.querySelector('.layer-state')!.textContent = layerStates.cameras ? 'ON' : 'OFF';
+    } else if (layer === 'earthquakes') {
+      layerStates.earthquakes = !layerStates.earthquakes;
+      earthquakeLayer.setVisible(layerStates.earthquakes);
+      btn.classList.toggle('active', layerStates.earthquakes);
+      btn.querySelector('.layer-state')!.textContent = layerStates.earthquakes ? 'ON' : 'OFF';
+    } else if (layer === 'weather') {
+      layerStates.weather = !layerStates.weather;
+      weatherLayer.setVisible(layerStates.weather);
+      btn.classList.toggle('active', layerStates.weather);
+      btn.querySelector('.layer-state')!.textContent = layerStates.weather ? 'ON' : 'OFF';
+    } else if (layer === 'natural') {
+      layerStates.natural = !layerStates.natural;
+      naturalEventsLayer.setVisible(layerStates.natural);
+      btn.classList.toggle('active', layerStates.natural);
+      btn.querySelector('.layer-state')!.textContent = layerStates.natural ? 'ON' : 'OFF';
     }
     updateActiveLayerBadge();
     document.querySelectorAll<HTMLElement>(`[data-shortcut-layer="${layer}"]`).forEach((item) => {
@@ -962,3 +995,11 @@ setInterval(() => loadSatelliteTle('iss'), 15 * 60 * 1000);
 setInterval(() => loadFlights(false), FLIGHT_REFRESH_MS);
 updateActiveLayerBadge();
 updateHudCoords();
+
+
+// Mantener las capas ambientales y los recursos de Cesium limpios al salir.
+window.addEventListener('beforeunload', () => {
+  earthquakeLayer.destroy();
+  weatherLayer.destroy();
+  naturalEventsLayer.destroy();
+});
