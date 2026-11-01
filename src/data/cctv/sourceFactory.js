@@ -8,9 +8,10 @@ export function createJsonCameraSource(config) {
   const source = {
     ...config,
     type: 'public_dot',
-    enabled: Boolean(config.catalogUrl),
+    enabled: config.verified === true && Boolean(config.catalogUrl),
+    verification: config.verified === true ? 'verified' : 'pending',
     async fetchCatalog({ fetchWithCap }) {
-      if (!this.catalogUrl) return [];
+      if (!this.enabled || !this.catalogUrl) return [];
       const response = await fetchWithCap(this.catalogUrl, {
         maxBytes: config.maxBytes || 2 * 1024 * 1024,
         redirect: 'error',
