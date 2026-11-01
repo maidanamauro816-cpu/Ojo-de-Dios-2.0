@@ -112,7 +112,7 @@ viewer.camera.setView({
 // fetched through the bounded same-origin Node proxy, never directly by Cesium.
 const cctvApiBase = (import.meta as any).env?.VITE_CCTV_API_BASE || '';
 const cctvLayer = createCctvLayer({ viewer, Cesium, container: $('camera-tools'), apiBase: cctvApiBase });
-const globalSatelliteLayer = createSatelliteLayer({ viewer, Cesium, statusElement: $('satellite-status-pill') });
+const globalSatelliteLayer = createSatelliteLayer({ viewer, Cesium, apiBase: cctvApiBase, statusElement: $('satellite-status-pill') });
 const marineLayer = createMarineLayer({ viewer, Cesium, apiBase: cctvApiBase, statusElement: $('marine-status-pill') });
 
 // Optional Cesium ion Photorealistic 3D Tiles. Use a restricted ion token in
