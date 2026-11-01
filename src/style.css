@@ -4,10 +4,10 @@
   background-color: #030812;
   color: #e2e8f0;
   --bg-panel: rgba(5, 14, 28, 0.88);
-  --border-cyan: rgba(56, 189, 248, 0.28);
-  --accent-cyan: #38bdf8;
+  --border-cyan: rgba(242, 200, 91, 0.28);
+  --accent-cyan: #f2c85b;
   --accent-emerald: #34d399;
-  --accent-amber: #fbbf24;
+  --accent-amber: #f2c85b;
   --text-muted: #94a3b8;
 }
 
@@ -63,7 +63,7 @@ html, body, #app {
   background: linear-gradient(180deg, rgba(3, 8, 18, 0.95) 0%, rgba(3, 8, 18, 0.75) 60%, rgba(3, 8, 18, 0) 100%);
   z-index: 10;
   pointer-events: auto;
-  border-bottom: 1px solid rgba(56, 189, 248, 0.12);
+  border-bottom: 1px solid rgba(242, 200, 91, 0.12);
 }
 
 .brand-group {
@@ -82,14 +82,20 @@ html, body, #app {
 }
 
 .brand-icon {
-  color: var(--accent-cyan);
+  color: #f2c85b;
   font-size: 20px;
-  filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.6));
+}
+
+.brand-icon img {
+  display: block;
+  width: 34px;
+  height: 34px;
+  filter: drop-shadow(0 0 8px rgba(242, 200, 91, 0.45));
 }
 
 .brand .accent {
   color: var(--accent-cyan);
-  background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+  background: linear-gradient(135deg, #f2c85b 0%, #d4a83e 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -114,7 +120,7 @@ html, body, #app {
   font-weight: 700;
   color: var(--accent-cyan);
   background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(56, 189, 248, 0.25);
+  border: 1px solid rgba(242, 200, 91, 0.25);
   padding: 4px 10px;
   border-radius: 4px;
   letter-spacing: 1px;
@@ -198,14 +204,14 @@ html, body, #app {
   padding: 14px;
   z-index: 10;
   scrollbar-width: thin;
-  scrollbar-color: rgba(56, 189, 248, 0.3) transparent;
+  scrollbar-color: rgba(242, 200, 91, 0.3) transparent;
 }
 
 .panel::-webkit-scrollbar {
   width: 4px;
 }
 .panel::-webkit-scrollbar-thumb {
-  background: rgba(56, 189, 248, 0.3);
+  background: rgba(242, 200, 91, 0.3);
   border-radius: 4px;
 }
 
@@ -215,7 +221,7 @@ html, body, #app {
   align-items: center;
   margin-bottom: 12px;
   padding-bottom: 8px;
-  border-bottom: 1px solid rgba(56, 189, 248, 0.18);
+  border-bottom: 1px solid rgba(242, 200, 91, 0.18);
 }
 
 .panel-title {
@@ -228,11 +234,11 @@ html, body, #app {
 .panel-badge {
   font-size: 9px;
   font-weight: 700;
-  background: rgba(56, 189, 248, 0.15);
+  background: rgba(242, 200, 91, 0.15);
   color: var(--accent-cyan);
   padding: 2px 6px;
   border-radius: 4px;
-  border: 1px solid rgba(56, 189, 248, 0.3);
+  border: 1px solid rgba(242, 200, 91, 0.3);
 }
 
 /* Layers Container & Buttons */
@@ -259,13 +265,13 @@ html, body, #app {
 
 .layer:hover {
   background: rgba(30, 41, 59, 0.7);
-  border-color: rgba(56, 189, 248, 0.3);
+  border-color: rgba(242, 200, 91, 0.3);
 }
 
 .layer.active {
   background: rgba(12, 74, 110, 0.28);
-  border-color: rgba(56, 189, 248, 0.5);
-  box-shadow: inset 0 0 14px rgba(56, 189, 248, 0.1);
+  border-color: rgba(242, 200, 91, 0.5);
+  box-shadow: inset 0 0 14px rgba(242, 200, 91, 0.1);
 }
 
 .layer-icon {
@@ -320,7 +326,7 @@ html, body, #app {
 .flight-tools {
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid rgba(56, 189, 248, 0.2);
+  border-top: 1px solid rgba(242, 200, 91, 0.2);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -344,7 +350,7 @@ html, body, #app {
 
 .mini-select, .mini-btn {
   background: #0f172a;
-  border: 1px solid rgba(56, 189, 248, 0.3);
+  border: 1px solid rgba(242, 200, 91, 0.3);
   color: #e2e8f0;
   font-size: 9px;
   font-weight: 700;
@@ -354,7 +360,7 @@ html, body, #app {
 }
 
 .mini-btn:hover {
-  background: rgba(56, 189, 248, 0.2);
+  background: rgba(242, 200, 91, 0.2);
   color: #fff;
 }
 
@@ -399,7 +405,7 @@ html, body, #app {
 }
 
 .flight-row:hover, .flight-row.selected {
-  background: rgba(56, 189, 248, 0.18);
+  background: rgba(242, 200, 91, 0.18);
 }
 
 .flight-dot {
@@ -456,7 +462,7 @@ html, body, #app {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(56, 189, 248, 0.25);
+  border-bottom: 1px solid rgba(242, 200, 91, 0.25);
   padding-bottom: 6px;
   margin-bottom: 8px;
 }
@@ -536,7 +542,7 @@ html, body, #app {
   margin-top: 10px;
   padding: 10px;
   background: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(56, 189, 248, 0.2);
+  border: 1px solid rgba(242, 200, 91, 0.2);
   border-radius: 8px;
 }
 
@@ -591,7 +597,7 @@ footer {
   align-items: center;
   justify-content: space-between;
   background: linear-gradient(0deg, rgba(3, 8, 18, 0.95) 0%, rgba(3, 8, 18, 0.6) 100%);
-  border-top: 1px solid rgba(56, 189, 248, 0.12);
+  border-top: 1px solid rgba(242, 200, 91, 0.12);
   z-index: 10;
   pointer-events: none;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
