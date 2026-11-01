@@ -49,6 +49,20 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
+      - name: Configure Background Runner Android library
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path("android/app/build.gradle")
+          content = path.read_text()
+          old = "dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'"
+          new = "dirs '../capacitor-cordova-android-plugins/src/main/libs', '../../node_modules/@capacitor/background-runner/android/src/main/libs', 'libs'"
+          if old not in content:
+              raise SystemExit("No se encontró el bloque flatDir esperado en android/app/build.gradle")
+          path.write_text(content.replace(old, new, 1))
+          print("Biblioteca android-js-engine-release del Background Runner agregada a flatDir.")
+          PY
+
       - name: Build debug APK with Gradle
         working-directory: android
         run: |
