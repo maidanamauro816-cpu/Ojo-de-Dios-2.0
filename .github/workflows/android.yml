@@ -36,6 +36,8 @@ jobs:
         run: npm run lint
 
       - name: Build web application
+        env:
+          VITE_CCTV_API_BASE: https://ojo-de-dios-cctv.sixsevenapp816.workers.dev
         run: npm run build
 
       - name: Generate Android project
