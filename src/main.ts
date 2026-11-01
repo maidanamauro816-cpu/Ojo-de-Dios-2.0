@@ -216,16 +216,22 @@ try {
 
 async function saveAlertSettings(enabled: boolean, position?: { latitude: number; longitude: number }) {
   const radiusKm = Number(locationRadius?.value || 100);
-  await BackgroundRunner.dispatchEvent({
-    label: 'com.ojodedios.world.disasterwatch',
-    event: 'saveAlertSettings',
-    details: {
-      enabled,
-      radiusKm,
-      latitude: position?.latitude ?? lastAlertPosition?.latitude ?? null,
-      longitude: position?.longitude ?? lastAlertPosition?.longitude ?? null
-    }
-  });
+  try {
+    // The runner runs in a separate headless context; do not block the UI waiting for it.
+    const pending = BackgroundRunner.dispatchEvent({
+      label: 'com.ojodedios.world.disasterwatch',
+      event: 'saveAlertSettings',
+      details: {
+        enabled,
+        radiusKm,
+        latitude: position?.latitude ?? lastAlertPosition?.latitude ?? null,
+        longitude: position?.longitude ?? lastAlertPosition?.longitude ?? null
+      }
+    });
+    pending.catch((error: unknown) => console.warn('No se pudo sincronizar la configuración de alertas en segundo plano:', error));
+  } catch (error) {
+    console.warn('No se pudo enviar la configuración al monitor de alertas:', error);
+  }
   localStorage.setItem('ojo-alerts-enabled', enabled ? 'true' : 'false');
   localStorage.setItem('ojo-alert-radius-km', String(radiusKm));
   if (enabled && position) localStorage.setItem('ojo-alert-last-position', JSON.stringify(position));
