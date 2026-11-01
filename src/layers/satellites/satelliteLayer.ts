@@ -146,7 +146,7 @@ export function createSatelliteLayer({ viewer, Cesium, apiBase = '', statusEleme
       // OMM JSON supports modern 6+ digit catalog numbers; legacy TLE does not.
       const apiRoot = String(apiBase || '').replace(/\/+$/, '');
       const directUrl = 'https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=JSON';
-      const urls = apiRoot ? [\`\${apiRoot}/api/satellites/active\`, directUrl] : [directUrl];
+      const urls = apiRoot ? [apiRoot + '/api/satellites/active', directUrl] : [directUrl];
       let response: Response | null = null;
       let fetchError: unknown = null;
       for (const url of urls) {
@@ -157,7 +157,7 @@ export function createSatelliteLayer({ viewer, Cesium, apiBase = '', statusEleme
             signal: AbortSignal.timeout(45000)
           });
           if (candidate.ok) { response = candidate; break; }
-          fetchError = new Error(\`Catálogo orbital HTTP \${candidate.status}\`);
+          fetchError = new Error('Catálogo orbital HTTP ' + candidate.status);
         } catch (error) {
           fetchError = error;
         }
