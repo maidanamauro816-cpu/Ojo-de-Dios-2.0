@@ -1107,8 +1107,7 @@ document.querySelectorAll<HTMLElement>('[data-shortcut-layer]').forEach((shortcu
       });
     }
     target.click();
-    const envMenu = document.getElementById('environment-dock');
-    if (envMenu) envMenu.hidden = ['earthquakes','weather','natural','clouds','precipitation'].includes(layer) ? false : true;
+    // El submenú Ambiental solo se abre desde su propio botón; no aparece al elegir Clima.
 
     document.querySelectorAll<HTMLElement>('[data-shortcut-layer]').forEach((item) => {
       const key = item.dataset.shortcutLayer || '';
