@@ -2,7 +2,7 @@ name: Build Ojo de Dios 2.0 Android APK
 
 on:
   push:
-    branches: [main]
+    branches: [main, integration/gods-eye-global-monitor]
   workflow_dispatch:
 
 permissions:
