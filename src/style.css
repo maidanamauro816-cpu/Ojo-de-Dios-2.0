@@ -747,3 +747,27 @@ footer { display:none !important; }
 #marine-status-pill {
   bottom: calc(124px + env(safe-area-inset-bottom, 0px));
 }
+
+
+/* FIX UX móvil: paneles de capa flotantes visibles sin tapar el globo */
+#main-panel {
+ display:block!important; position:fixed!important;
+ inset:auto 8px calc(82px + env(safe-area-inset-bottom)) 8px!important;
+ width:auto!important; max-width:none!important; max-height:min(42dvh,360px)!important;
+ padding:0!important; overflow:visible!important; border:0!important;
+ border-radius:0!important; background:transparent!important; box-shadow:none!important;
+ backdrop-filter:none!important; pointer-events:none!important; z-index:30!important;
+}
+#main-panel > * {pointer-events:auto}
+#main-panel > .panel-header,#main-panel > .layers-container,#main-panel > .hint {display:none!important}
+#main-panel .cctv-panel,#main-panel .flight-tools,#main-panel .marine-tools {
+ width:100%!important; max-height:min(38dvh,320px)!important; margin:0 0 8px!important;
+ overflow:auto!important; border:1px solid rgba(214,173,80,.55)!important;
+ border-radius:13px!important; background:rgba(4,9,17,.96)!important;
+ box-shadow:0 8px 28px rgba(0,0,0,.55),0 0 16px rgba(214,173,80,.12)!important;
+}
+#main-panel [hidden] {display:none!important}
+#main-panel .flight-tools:not([hidden]),#main-panel .marine-tools:not([hidden]),#main-panel .cctv-panel:not([hidden]) {display:block!important}
+.layer-dock {z-index:50!important; pointer-events:auto!important}
+.layer-dock .dock-item {touch-action:manipulation}
+.satellite-status-pill {z-index:25!important; bottom:calc(84px + env(safe-area-inset-bottom))!important}
