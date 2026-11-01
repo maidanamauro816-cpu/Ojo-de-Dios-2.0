@@ -38,3 +38,24 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy
+
+      - name: Check AISStream secret
+        id: ais
+        env:
+          AISSTREAM_API_KEY: ${{ secrets.AISSTREAM_API_KEY }}
+        run: |
+          if [ -n "$AISSTREAM_API_KEY" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Agregá AISSTREAM_API_KEY para activar la capa de barcos."
+          fi
+
+      - name: Configure AISStream Worker secret
+        if: steps.credentials.outputs.ready == 'true' && steps.ais.outputs.ready == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          AISSTREAM_API_KEY: ${{ secrets.AISSTREAM_API_KEY }}
+        run: |
+          printf '%s' "$AISSTREAM_API_KEY" | npx --yes wrangler@4 secret put AISSTREAM_API_KEY --config wrangler.toml
