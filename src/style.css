@@ -855,3 +855,39 @@ footer { display:none !important; }
   height:calc(100dvh - 68px - env(safe-area-inset-bottom)) !important;
 }
 .cesium-viewer-bottom { bottom:calc(74px + env(safe-area-inset-bottom)) !important; }
+
+
+/* Menú superior de configuración por categorías */
+.settings-menu-wrap { position:relative; }
+.settings-menu {
+  position:absolute; top:calc(100% + 9px); right:0; z-index:1200;
+  width:min(340px, calc(100vw - 18px)); max-height:min(72vh, 620px);
+  overflow:auto; padding:10px; border:1px solid rgba(242,200,91,.38);
+  border-radius:12px; background:rgba(3,8,18,.98);
+  box-shadow:0 12px 36px rgba(0,0,0,.55); color:#e2e8f0;
+}
+.settings-menu[hidden] { display:none !important; }
+.settings-group { border-bottom:1px solid rgba(242,200,91,.16); padding:9px 4px; }
+.settings-group:last-child { border-bottom:0; }
+.settings-group summary { cursor:pointer; list-style:none; font-size:13px; font-weight:800; padding:7px 5px; }
+.settings-group summary::-webkit-details-marker { display:none; }
+.settings-submenu { display:flex; flex-direction:column; gap:5px; padding:7px 2px 4px 10px; }
+.settings-submenu button {
+  text-align:left; border:1px solid rgba(148,163,184,.18); border-radius:7px;
+  background:rgba(15,23,42,.82); color:#e2e8f0; padding:10px 9px;
+  font-size:12px; min-height:38px;
+}
+.settings-submenu button:active, .settings-submenu button.active {
+  border-color:#f2c85b; background:rgba(242,200,91,.13);
+}
+.settings-submenu p,.settings-submenu small { color:#94a3b8; font-size:11px; line-height:1.4; padding:2px 4px; }
+@media (max-width: 720px) {
+  .topbar { padding:0 8px; height:64px; }
+  .brand { font-size:13px; letter-spacing:1px; }
+  .subtitle { display:none; }
+  .header-center { display:none; }
+  .header-actions { gap:4px; }
+  .header-actions .tactical-select { max-width:110px; }
+  .header-actions .tactical-btn { padding:7px 8px; font-size:10px; }
+  .settings-menu { right:0; top:calc(100% + 6px); }
+}
