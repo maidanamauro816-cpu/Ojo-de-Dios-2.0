@@ -797,3 +797,29 @@ footer { display:none !important; }
   border-radius: 7px;
   color-scheme: dark;
 }
+
+
+/* Panel de ubicación y alertas de proximidad */
+.location-alerts-panel {
+  display:flex; flex-direction:column; gap:8px; margin:12px 0;
+  padding:12px; border:1px solid rgba(214,173,80,.38); border-radius:12px;
+  background:linear-gradient(145deg,rgba(23,27,35,.96),rgba(7,12,19,.96));
+  color:#e9edf3;
+}
+.location-alerts-heading { display:flex; align-items:center; gap:9px; }
+.location-alerts-icon { font-size:24px; }
+.location-alerts-heading div { display:flex; flex-direction:column; gap:3px; }
+.location-alerts-heading strong { color:#f2d58d; font-size:10px; letter-spacing:.06em; }
+.location-alerts-heading small,.location-alerts-panel small { color:#aeb9c7; font-size:10px; line-height:1.4; }
+.location-alert-toggle {
+  min-height:40px; border:1px solid rgba(214,173,80,.65); border-radius:8px;
+  background:rgba(214,173,80,.12); color:#f4d98e; font-weight:800; font-size:11px;
+}
+.location-alert-toggle.active { background:rgba(37,125,83,.2); border-color:rgba(70,190,130,.7); color:#8ce0b2; }
+.location-alerts-panel label { color:#c8d2de; font-size:10px; font-weight:700; }
+.location-alerts-panel select {
+  width:100%; min-height:34px; padding:6px 8px; color:#edf3f8;
+  background:#071522; border:1px solid rgba(139,170,195,.35); border-radius:7px; color-scheme:dark;
+}
+.location-alert-types { color:#d7c28f; font-size:9px; line-height:1.5; }
+.location-alert-privacy { border-top:1px solid rgba(255,255,255,.08); padding-top:7px; }
