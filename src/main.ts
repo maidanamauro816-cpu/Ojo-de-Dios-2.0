@@ -284,8 +284,8 @@ if (locationRadius) {
 }
 if (locationToggle) {
   const wasEnabled = localStorage.getItem('ojo-alerts-enabled') === 'true';
-  renderLocationState(false, wasEnabled
-    ? 'La ubicación quedó pausada al iniciar. Tocá activar para volver a autorizar la posición actual.'
+  renderLocationState(wasEnabled, wasEnabled
+    ? 'Alertas cercanas activadas. El control en segundo plano usa la última ubicación autorizada; tocá para desactivarlas.'
     : 'Desactivada. Activala para recibir avisos de fenómenos cercanos.');
   locationToggle.addEventListener('click', async () => {
     const enabled = localStorage.getItem('ojo-alerts-enabled') === 'true';
