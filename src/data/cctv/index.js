@@ -26,7 +26,7 @@ export const CCTV_REGISTRY = [
 export async function loadAllCameras({ fetchWithCap, sources = CCTV_REGISTRY, perSourceLimit = 2000 } = {}) {
   const settled = await Promise.allSettled(sources.map(async (source) => {
     if (!source.enabled || !source.catalogUrl) {
-      return { source, cameras: [], status: 'disabled', message: source.catalogUrl ? '' : 'Endpoint oficial pendiente de confirmar' };
+      return { source, cameras: [], status: 'disabled', message: source.catalogUrl ? 'Endpoint y licencia pendientes de verificación' : 'Endpoint oficial pendiente de confirmar' };
     }
     const rawList = await source.fetchCatalog({ fetchWithCap });
     const cameras = [];
