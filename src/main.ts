@@ -263,6 +263,7 @@ async function activateLocationAlerts() {
       longitude: position.coords.longitude
     };
     updateUserLocationMarker(lastAlertPosition);
+    weatherLayer.setLocation(lastAlertPosition.latitude, lastAlertPosition.longitude);
     await saveAlertSettings(true, lastAlertPosition);
     renderLocationState(true,
       'Ubicación activada · ' + lastAlertPosition.latitude.toFixed(4) + ', ' +
@@ -277,6 +278,7 @@ async function activateLocationAlerts() {
           longitude: nextPosition.coords.longitude
         };
         updateUserLocationMarker(lastAlertPosition);
+        weatherLayer.setLocation(lastAlertPosition.latitude, lastAlertPosition.longitude);
         try {
           await saveAlertSettings(true, lastAlertPosition);
           renderLocationState(true,
@@ -300,6 +302,7 @@ async function deactivateLocationAlerts() {
   }
   lastAlertPosition = null;
   updateUserLocationMarker(null);
+  weatherLayer.setLocation(null as any, null as any);
   await saveAlertSettings(false);
   renderLocationState(false, 'Ubicación desactivada. No se buscarán alertas cercanas a tu posición.');
 }
@@ -316,7 +319,10 @@ if (locationRadius) {
 }
 if (locationToggle) {
   const wasEnabled = localStorage.getItem('ojo-alerts-enabled') === 'true';
-  if (wasEnabled && lastAlertPosition) updateUserLocationMarker(lastAlertPosition);
+  if (wasEnabled && lastAlertPosition) {
+    updateUserLocationMarker(lastAlertPosition);
+    weatherLayer.setLocation(lastAlertPosition.latitude, lastAlertPosition.longitude);
+  }
   renderLocationState(wasEnabled, wasEnabled
     ? 'Alertas cercanas activadas. El control en segundo plano usa la última ubicación autorizada; tocá para desactivarlas.'
     : 'Desactivada. Activala para recibir avisos de fenómenos cercanos.');
