@@ -8,6 +8,7 @@ import { createMarineLayer } from './layers/marine/marineLayer.js';
 import { EarthquakeLayer } from './layers/EarthquakeLayer.js';
 import { WeatherLayer } from './layers/WeatherLayer.js';
 import { NaturalEventsLayer } from './layers/NaturalEventsLayer.js';
+import { GlobalWeatherLayer } from './layers/GlobalWeatherLayer.js';
 
 declare const Cesium: any;
 
@@ -132,6 +133,15 @@ const naturalEventsLayer = new NaturalEventsLayer(viewer, (state: any) => {
   const el = $('natural-status'); if (!el) return;
   el.textContent = state.loading ? 'Consultando NASA EONET…' : state.error ? state.error : state.count + ' eventos naturales · NASA';
 });
+const globalWeatherLayer = new GlobalWeatherLayer(viewer, (state: any) => {
+  const el = $('global-weather-status');
+  if (el) el.textContent = state.message || 'NASA GIBS · mosaico global';
+});
+const weatherDateInput = $('weather-date') as HTMLInputElement | null;
+if (weatherDateInput) {
+  weatherDateInput.value = globalWeatherLayer.date;
+  weatherDateInput.addEventListener('change', () => globalWeatherLayer.setDate(weatherDateInput.value));
+}
 
 // Permisos y canales Android para avisos visibles en la barra de notificaciones.
 async function configureDisasterNotifications() {
@@ -205,7 +215,9 @@ const layerStates: Record<string, boolean> = {
   cameras: false,
   earthquakes: false,
   weather: false,
-  natural: false
+  natural: false,
+  clouds: false,
+  precipitation: false
 };
 
 function updateActiveLayerBadge() {
@@ -892,6 +904,16 @@ document.querySelectorAll('[data-layer]').forEach((btn) => {
       naturalEventsLayer.setVisible(layerStates.natural);
       btn.classList.toggle('active', layerStates.natural);
       btn.querySelector('.layer-state')!.textContent = layerStates.natural ? 'ON' : 'OFF';
+    } else if (layer === 'clouds') {
+      layerStates.clouds = !layerStates.clouds;
+      globalWeatherLayer.setVisible('clouds', layerStates.clouds);
+      btn.classList.toggle('active', layerStates.clouds);
+      btn.querySelector('.layer-state')!.textContent = layerStates.clouds ? 'ON' : 'OFF';
+    } else if (layer === 'precipitation') {
+      layerStates.precipitation = !layerStates.precipitation;
+      globalWeatherLayer.setVisible('precipitation', layerStates.precipitation);
+      btn.classList.toggle('active', layerStates.precipitation);
+      btn.querySelector('.layer-state')!.textContent = layerStates.precipitation ? 'ON' : 'OFF';
     }
     updateActiveLayerBadge();
     document.querySelectorAll<HTMLElement>(`[data-shortcut-layer="${layer}"]`).forEach((item) => {
@@ -1056,4 +1078,5 @@ window.addEventListener('beforeunload', () => {
   earthquakeLayer.destroy();
   weatherLayer.destroy();
   naturalEventsLayer.destroy();
+  globalWeatherLayer.destroy();
 });
