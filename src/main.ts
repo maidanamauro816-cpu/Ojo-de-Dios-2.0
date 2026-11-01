@@ -1,4 +1,5 @@
 import { twoline2satrec, propagate, gstime, eciToGeodetic, degreesLat, degreesLong } from 'satellite.js';
+import { createCctvLayer } from './layers/cctv/cctvLayer.js';
 
 declare const Cesium: any;
 
@@ -105,6 +106,20 @@ viewer.camera.setView({
   }
 });
 
+// CCTV Mesh: public government traffic cameras only. Catalogs and frames are
+// fetched through the bounded same-origin Node proxy, never directly by Cesium.
+const cctvLayer = createCctvLayer({ viewer, Cesium, container: $('camera-tools') });
+
+// Optional Cesium ion Photorealistic 3D Tiles. Use a restricted ion token in
+// VITE_CESIUM_ION_TOKEN; without it the existing globe imagery remains active.
+const ionToken = (import.meta as any).env?.VITE_CESIUM_ION_TOKEN;
+if (ionToken) {
+  Cesium.Ion.defaultAccessToken = ionToken;
+  Cesium.Cesium3DTileset.fromIonAssetId(2275207)
+    .then((tileset: any) => viewer.scene.primitives.add(tileset))
+    .catch((error: unknown) => console.warn('Photorealistic 3D Tiles unavailable:', error));
+}
+
 // Layer state tracking
 const layerStates: Record<string, boolean> = {
   iss: true,
@@ -113,7 +128,8 @@ const layerStates: Record<string, boolean> = {
   strategic: true,
   military: true,
   flights: false,
-  ships: false
+  ships: false,
+  cameras: false
 };
 
 function updateActiveLayerBadge() {
@@ -778,6 +794,11 @@ document.querySelectorAll('[data-layer]').forEach((btn) => {
       if (marineTools) marineTools.hidden = !layerStates.ships;
       btn.classList.toggle('active', layerStates.ships);
       btn.querySelector('.layer-state')!.textContent = layerStates.ships ? 'ON' : 'OFF';
+    } else if (layer === 'cameras') {
+      layerStates.cameras = !layerStates.cameras;
+      cctvLayer.setEnabled(layerStates.cameras);
+      btn.classList.toggle('active', layerStates.cameras);
+      btn.querySelector('.layer-state')!.textContent = layerStates.cameras ? 'ON' : 'OFF';
     }
     updateActiveLayerBadge();
     document.querySelectorAll<HTMLElement>(`[data-shortcut-layer="${layer}"]`).forEach((item) => {
