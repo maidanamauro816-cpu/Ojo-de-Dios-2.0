@@ -780,6 +780,11 @@ document.querySelectorAll('[data-layer]').forEach((btn) => {
       btn.querySelector('.layer-state')!.textContent = layerStates.ships ? 'ON' : 'OFF';
     }
     updateActiveLayerBadge();
+    document.querySelectorAll<HTMLElement>(`[data-shortcut-layer="${layer}"]`).forEach((item) => {
+      const active = layer === 'cameras' ? layerStates.cameras : layerStates[layer] ?? false;
+      item.classList.toggle('active', active);
+      item.setAttribute('aria-pressed', String(active));
+    });
   });
 });
 
