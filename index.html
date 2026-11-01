@@ -54,6 +54,40 @@
         </select>
         <button id="toggle-sun" class="tactical-btn" title="Alternar iluminación solar día/noche">☀️ Sol</button>
         <button id="reset-cam" class="tactical-btn" title="Restablecer vista orbital">🌍 Órbita</button>
+        <div class="settings-menu-wrap">
+          <button id="settings-menu-toggle" class="tactical-btn" aria-expanded="false" aria-controls="settings-menu">⚙️ Configuración</button>
+          <div id="settings-menu" class="settings-menu" hidden>
+            <details class="settings-group">
+              <summary>🌍 Ambiental</summary>
+              <div class="settings-submenu">
+                <button type="button" data-config-layer="earthquakes">🌋 Sismos y terremotos</button>
+                <button type="button" data-config-layer="weather">⛈️ Tormentas y clima</button>
+                <button type="button" data-config-layer="clouds">☁️ Mosaico de nubes</button>
+                <button type="button" data-config-layer="precipitation">🌧️ Precipitaciones</button>
+                <button type="button" data-config-layer="natural">🔥 Incendios e inundaciones / eventos</button>
+              </div>
+            </details>
+            <details class="settings-group">
+              <summary>🛡️ Bases y seguridad pública</summary>
+              <div class="settings-submenu">
+                <button type="button" data-security-filter="police">🚓 Dependencias policiales</button>
+                <button type="button" data-security-filter="prefectura">⚓ Prefectura / Guardacostas</button>
+                <button type="button" data-security-filter="naval">🚢 Instalaciones navales públicas</button>
+                <button type="button" data-security-filter="army">🪖 Ejército / bases terrestres públicas</button>
+                <button type="button" data-security-filter="air">✈️ Bases aéreas públicas</button>
+                <small id="security-data-status">Ubicaciones públicas documentadas; cobertura según disponibilidad de fuentes.</small>
+              </div>
+            </details>
+            <details class="settings-group">
+              <summary>🔔 Alerta temprana</summary>
+              <div class="settings-submenu">
+                <p>Activá tu GPS para recibir avisos cercanos del SMN y otros organismos oficiales.</p>
+                <button type="button" id="settings-location-toggle">📍 Activar mi ubicación</button>
+                <small id="settings-location-status">La ubicación está desactivada.</small>
+              </div>
+            </details>
+          </div>
+        </div>
       </div>
     </header>
 
