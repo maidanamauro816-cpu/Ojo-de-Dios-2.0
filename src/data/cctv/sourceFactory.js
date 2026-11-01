@@ -49,8 +49,8 @@ export function createJsonCameraSource(config) {
       return Number.isFinite(point.lat) &&
         Number.isFinite(point.lon) &&
         point.lat >= -90 && point.lat <= 90 &&
-        point.lon >= -180 && point.lon <= 180;
-        && (typeof config.isValid !== 'function' || config.isValid(point));
+        point.lon >= -180 && point.lon <= 180 &&
+        (typeof config.isValid !== 'function' || config.isValid(point));
     }
   };
   return source;
