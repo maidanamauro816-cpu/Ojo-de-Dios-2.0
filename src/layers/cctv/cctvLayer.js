@@ -310,7 +310,7 @@ export function createCctvLayer({ viewer, Cesium, container }) {
       const name = document.createElement('span');
       name.textContent = `${region} · ${source?.name || 'Fuente'}`;
       const count = document.createElement('small');
-      count.textContent = String(source?.count ?? 0);
+      count.textContent = source?.status === 'ok' ? String(source.count) : (source?.status === 'stale' ? 'caché' : 'pendiente');
       row.append(checkbox, name, count);
       controls.regions.append(row);
     }
