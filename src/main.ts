@@ -2,6 +2,7 @@ import { twoline2satrec, propagate, gstime, eciToGeodetic, degreesLat, degreesLo
 import { Capacitor } from '@capacitor/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { Geolocation } from '@capacitor/geolocation';
+import { BackgroundRunner } from '@capacitor/background-runner';
 import { createCctvLayer } from './layers/cctv/cctvLayer.js';
 import { createSatelliteLayer } from './layers/satellites/satelliteLayer.js';
 import { createMarineLayer } from './layers/marine/marineLayer.js';
@@ -161,18 +162,7 @@ async function configureDisasterNotifications() {
       id: 'desastres-live', name: 'Fenómenos naturales',
       description: 'Tormentas, incendios, inundaciones y ciclones', importance: 4, vibration: true
     });
-    let locationLabel = 'sin ubicación precisa';
-    try {
-      let locationPermission = await Geolocation.checkPermissions();
-      if (locationPermission.location !== 'granted') locationPermission = await Geolocation.requestPermissions();
-      if (locationPermission.location === 'granted') {
-        const position = await Geolocation.getCurrentPosition({ enableHighAccuracy: false, timeout: 8000, maximumAge: 15 * 60 * 1000 });
-        localStorage.setItem('ojo-alert-center', JSON.stringify({ lat: position.coords.latitude, lon: position.coords.longitude }));
-        locationLabel = 'radio local disponible';
-      }
-    } catch (locationError) {
-      console.info('Ubicación para alertas no disponible; se mantienen alertas globales importantes.', locationError);
-    }
+    const locationLabel = 'ubicación voluntaria desactivada hasta que la actives';
     await LocalNotifications.addListener('localNotificationActionPerformed', (event) => {
       const extra = event.notification?.extra || {};
       const lat = Number(extra.lat), lon = Number(extra.lon);
@@ -191,7 +181,119 @@ async function configureDisasterNotifications() {
     if (el) el.textContent = 'No se pudieron activar las notificaciones';
   }
 }
+
 configureDisasterNotifications();
+
+// Ubicación voluntaria para alertas cercanas. No se solicita al abrir la app.
+const locationToggle = $('location-alert-toggle') as HTMLButtonElement | null;
+const locationStatus = $('location-alert-status');
+const locationRadius = $('location-alert-radius') as HTMLSelectElement | null;
+let locationWatchId: string | null = null;
+let lastAlertPosition: { latitude: number; longitude: number } | null = null;
+
+async function saveAlertSettings(enabled: boolean, position?: { latitude: number; longitude: number }) {
+  const radiusKm = Number(locationRadius?.value || 100);
+  await BackgroundRunner.dispatchEvent({
+    label: 'com.ojodedios.world.disasterwatch',
+    event: 'saveAlertSettings',
+    details: {
+      enabled,
+      radiusKm,
+      latitude: position?.latitude ?? lastAlertPosition?.latitude ?? null,
+      longitude: position?.longitude ?? lastAlertPosition?.longitude ?? null
+    }
+  });
+  localStorage.setItem('ojo-alerts-enabled', enabled ? 'true' : 'false');
+  localStorage.setItem('ojo-alert-radius-km', String(radiusKm));
+}
+
+function renderLocationState(enabled: boolean, message: string) {
+  if (locationToggle) {
+    locationToggle.textContent = enabled ? '📍 UBICACIÓN ACTIVA · DESACTIVAR' : '📍 ACTIVAR MI UBICACIÓN';
+    locationToggle.classList.toggle('active', enabled);
+    locationToggle.setAttribute('aria-pressed', String(enabled));
+  }
+  if (locationStatus) locationStatus.textContent = message;
+}
+
+async function activateLocationAlerts() {
+  if (!Capacitor.isNativePlatform()) {
+    renderLocationState(false, 'La ubicación y las alertas del teléfono estarán disponibles en la versión Android instalada.');
+    return;
+  }
+  try {
+    const permission = await Geolocation.checkPermissions();
+    const granted = permission.location === 'granted'
+      ? permission
+      : await Geolocation.requestPermissions();
+    if (granted.location !== 'granted') {
+      renderLocationState(false, 'Permiso de ubicación denegado. Podés habilitarlo desde Ajustes de Android.');
+      return;
+    }
+    const position = await Geolocation.getCurrentPosition({
+      enableHighAccuracy: false, timeout: 15000, maximumAge: 60000
+    });
+    lastAlertPosition = {
+      latitude: position.coords.latitude,
+      longitude: position.coords.longitude
+    };
+    await saveAlertSettings(true, lastAlertPosition);
+    renderLocationState(true,
+      'Ubicación activada · ' + lastAlertPosition.latitude.toFixed(4) + ', ' +
+      lastAlertPosition.longitude.toFixed(4) + ' · radio ' + (locationRadius?.value || '100') + ' km');
+    if (locationWatchId) await Geolocation.clearWatch({ id: locationWatchId });
+    locationWatchId = await Geolocation.watchPosition(
+      { enableHighAccuracy: false, timeout: 20000, maximumAge: 60000 },
+      async (nextPosition, error) => {
+        if (error || !nextPosition) return;
+        lastAlertPosition = {
+          latitude: nextPosition.coords.latitude,
+          longitude: nextPosition.coords.longitude
+        };
+        try {
+          await saveAlertSettings(true, lastAlertPosition);
+          renderLocationState(true,
+            'Ubicación actualizada · ' + lastAlertPosition.latitude.toFixed(4) + ', ' +
+            lastAlertPosition.longitude.toFixed(4) + ' · radio ' + (locationRadius?.value || '100') + ' km');
+        } catch (saveError) {
+          console.warn('No se pudo actualizar el centro de alertas:', saveError);
+        }
+      }
+    );
+  } catch (error) {
+    console.warn('No se pudo activar la ubicación:', error);
+    renderLocationState(false, 'No se pudo obtener la ubicación. Revisá GPS y permisos del teléfono.');
+  }
+}
+
+async function deactivateLocationAlerts() {
+  if (locationWatchId) {
+    await Geolocation.clearWatch({ id: locationWatchId });
+    locationWatchId = null;
+  }
+  lastAlertPosition = null;
+  await saveAlertSettings(false);
+  renderLocationState(false, 'Ubicación desactivada. No se buscarán alertas cercanas a tu posición.');
+}
+
+if (locationRadius) {
+  locationRadius.value = localStorage.getItem('ojo-alert-radius-km') || '100';
+  locationRadius.addEventListener('change', async () => {
+    if (lastAlertPosition) await saveAlertSettings(true, lastAlertPosition);
+  });
+}
+if (locationToggle) {
+  const wasEnabled = localStorage.getItem('ojo-alerts-enabled') === 'true';
+  renderLocationState(false, wasEnabled
+    ? 'La ubicación quedó pausada al iniciar. Tocá activar para volver a autorizar la posición actual.'
+    : 'Desactivada. Activala para recibir avisos de fenómenos cercanos.');
+  locationToggle.addEventListener('click', async () => {
+    const enabled = localStorage.getItem('ojo-alerts-enabled') === 'true';
+    if (enabled) await deactivateLocationAlerts();
+    else await activateLocationAlerts();
+  });
+}
+
 
 // Optional Cesium ion Photorealistic 3D Tiles. Use a restricted ion token in
 // VITE_CESIUM_ION_TOKEN; without it the existing globe imagery remains active.
