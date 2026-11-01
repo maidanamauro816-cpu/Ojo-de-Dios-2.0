@@ -51,7 +51,7 @@ const CAMERA_ICON = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
  * calibration only changes a visual heading/coverage hypothesis.
  */
 export function createCctvLayer({ viewer, Cesium, container, apiBase = '' }) {
-  const apiRoot = String(apiBase || '').replace(/\\/+$/, '');
+  const apiRoot = String(apiBase || '').replace(/\/+$/, '');
   const apiPath = (path) => `${apiRoot}${path}`;
   const state = {
     enabled: false,
