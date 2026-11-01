@@ -190,6 +190,10 @@ const locationStatus = $('location-alert-status');
 const locationRadius = $('location-alert-radius') as HTMLSelectElement | null;
 let locationWatchId: string | null = null;
 let lastAlertPosition: { latitude: number; longitude: number } | null = null;
+try {
+  const savedPosition = JSON.parse(localStorage.getItem('ojo-alert-last-position') || 'null');
+  if (savedPosition && Number.isFinite(savedPosition.latitude) && Number.isFinite(savedPosition.longitude)) lastAlertPosition = savedPosition;
+} catch { lastAlertPosition = null; }
 
 async function saveAlertSettings(enabled: boolean, position?: { latitude: number; longitude: number }) {
   const radiusKm = Number(locationRadius?.value || 100);
@@ -205,6 +209,8 @@ async function saveAlertSettings(enabled: boolean, position?: { latitude: number
   });
   localStorage.setItem('ojo-alerts-enabled', enabled ? 'true' : 'false');
   localStorage.setItem('ojo-alert-radius-km', String(radiusKm));
+  if (enabled && position) localStorage.setItem('ojo-alert-last-position', JSON.stringify(position));
+  if (!enabled) localStorage.removeItem('ojo-alert-last-position');
 }
 
 function renderLocationState(enabled: boolean, message: string) {
@@ -279,7 +285,11 @@ async function deactivateLocationAlerts() {
 if (locationRadius) {
   locationRadius.value = localStorage.getItem('ojo-alert-radius-km') || '100';
   locationRadius.addEventListener('change', async () => {
-    if (lastAlertPosition) await saveAlertSettings(true, lastAlertPosition);
+    if (localStorage.getItem('ojo-alerts-enabled') === 'true' && lastAlertPosition) {
+      await saveAlertSettings(true, lastAlertPosition);
+    } else {
+      localStorage.setItem('ojo-alert-radius-km', locationRadius.value);
+    }
   });
 }
 if (locationToggle) {
