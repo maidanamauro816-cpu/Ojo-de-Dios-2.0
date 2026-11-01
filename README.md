@@ -1,8 +1,9 @@
 # Ojo de Dios 2.0
 
-Globo terráqueo 3D educativo construido con CesiumJS. Muestra, en tiempo real sobre un mapa interactivo:
+Globo terráqueo 3D construido con CesiumJS. Las capas se activan desde el dock inferior.
 
-- 🛰️ La Estación Espacial Internacional (ISS), Tiangong y el telescopio Hubble, con propagación orbital real (SGP4/TLE públicos de CelesTrak).
+- 🛰️ Catálogo mundial de satélites activos de CelesTrak en OMM JSON, incluyendo identificadores NORAD modernos de 6+ dígitos. Las posiciones se calculan con SGP4 usando satellite.js; no son detecciones de radar. El catálogo se conserva en IndexedDB y se actualiza respetando la ventana de 2 horas de CelesTrak.
+- 🛰️ ISS, Tiangong y Hubble como objetos destacados.
 - ✈️ Tráfico aéreo comercial en vivo (ADS-B público, vía adsb.lol) con ficha de cada vuelo.
 - 🪖 Bases militares, navales y aéreas de ubicación públicamente documentada (solo nombre y posición; sin feeds en vivo).
 - 🔬 Instalaciones científicas estratégicas (CERN, Kennedy Space Center, Svalbard, ALMA) y HAARP.
@@ -24,25 +25,19 @@ npm run build
 
 El workflow `.github/workflows/android.yml` compila un APK de depuración en cada push a `main` y lo deja como artefacto y como versión (release) del repositorio.
 
-## Qué se dejó fuera
+## Cámaras públicas
 
-Esta versión no incluye un directorio de cámaras públicas: agregar y transmitir cámaras de todo el mundo, incluso cuando se las llame "de acceso abierto", termina incluyendo cámaras privadas mal configuradas y expuestas por error, sin el consentimiento de quien está detrás. Si necesitás ver tus propias cámaras de seguridad, se puede construir un visor aparte con tus credenciales.
+La capa CCTV incorpora la fuente oficial de Statens vegvesen (Noruega): catálogo GeoJSON público, snapshots publicados por la autoridad vial y atribución NLOD 2.0. Se filtran cámaras que el propio catálogo marca como defectuosas. Las demás fuentes regionales del registro siguen deshabilitadas hasta verificar sus endpoints, formatos y permisos de reutilización.
 
+El proxy Node integrado en Vite limita catálogos e imágenes, exige HTTPS, aplica allowlist de hosts, valida DNS/IP y rechaza redirecciones. **En Android instalado, este proxy debe estar alojado en un servidor HTTPS externo**; el proxy de Vite solo funciona durante desarrollo. Hasta configurar ese servicio remoto, la capa CCTV no puede recuperar imágenes desde el APK.
 
-## CCTV Mesh (rama `feature/cctv-mesh`)
+La capa incluye filtros regionales, NEAREST, VIEWSHED geométrico estimado y calibración de orientación. El VIEWSHED no simula oclusión real por edificios o relieve.
 
-Se añadió una capa de cámaras públicas de tránsito con adaptadores regionales, proxy Node integrado en Vite y geometría Cesium 3D. El servidor limita catálogos a 2–4 MiB, imágenes a 4 MiB, no sigue redirecciones, exige HTTPS, aplica allowlist por autoridad y valida DNS/IP antes de abrir la conexión.
+## Límites de cobertura
 
-**Importante:** los adaptadores regionales se incorporan como pendientes de verificación. Un endpoint sugerido o una etiqueta de licencia en un comentario no demuestra que la API exista ni que autorice reutilizar sus imágenes. Para evitar tráfico a rutas inventadas y atribuciones incorrectas, una fuente solo se activa cuando su módulo se marca `verified: true` después de comprobar endpoint, formato, imagen y licencia. Delaware y Austria no traían una URL de catálogo verificable y permanecen desactivadas.
-
-### Desarrollo
-
-```bash
-npm install
-npm run dev
-```
-
-La capa se abre desde **Cámaras públicas de tránsito**. Incluye filtros regionales, NEAREST, VIEWSHED estimado y un gizmo arrastrable para ajustar la orientación. Las imágenes se proyectan sobre un plano Cesium 3D de la cámara seleccionada; no se incrustan como webcam externa.
+- Satélites: se muestran los activos con elementos orbitales públicos disponibles en CelesTrak; no incluye objetos sin efemérides públicas ni garantiza cada objeto catalogado.
+- Aviones: ADS-B público por radio alrededor del centro visible, no un mapa mundial completo.
+- Barcos: el botón AIS todavía requiere integrar un proveedor de datos y sus condiciones de acceso; no se presenta como telemetría conectada.
 
 ### Cesium ion opcional
 
