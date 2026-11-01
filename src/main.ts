@@ -109,7 +109,8 @@ viewer.camera.setView({
 
 // CCTV Mesh: public government traffic cameras only. Catalogs and frames are
 // fetched through the bounded same-origin Node proxy, never directly by Cesium.
-const cctvLayer = createCctvLayer({ viewer, Cesium, container: $('camera-tools') });
+const cctvApiBase = (import.meta as any).env?.VITE_CCTV_API_BASE || '';
+const cctvLayer = createCctvLayer({ viewer, Cesium, container: $('camera-tools'), apiBase: cctvApiBase });
 const globalSatelliteLayer = createSatelliteLayer({ viewer, Cesium, statusElement: $('satellite-status-pill') });
 
 // Optional Cesium ion Photorealistic 3D Tiles. Use a restricted ion token in

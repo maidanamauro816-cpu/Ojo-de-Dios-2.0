@@ -50,7 +50,9 @@ const CAMERA_ICON = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
  * Public-government road CCTV layer. Every pose is explicitly estimated;
  * calibration only changes a visual heading/coverage hypothesis.
  */
-export function createCctvLayer({ viewer, Cesium, container }) {
+export function createCctvLayer({ viewer, Cesium, container, apiBase = '' }) {
+  const apiRoot = String(apiBase || '').replace(/\/+$/, '');
+  const apiPath = (path) => `${apiRoot}${path}`;
   const state = {
     enabled: false,
     showViewshed: false,
@@ -381,7 +383,7 @@ export function createCctvLayer({ viewer, Cesium, container }) {
   async function load() {
     setStatus('Consultando catálogos públicos…');
     try {
-      const response = await fetch('/api/cctv/catalog', { cache: 'no-store' });
+      const response = await fetch(apiPath('/api/cctv/catalog'), { cache: 'no-store' });
       if (!response.ok) throw new Error('Proxy CCTV HTTP ' + response.status);
       const payload = await response.json();
       state.cameras = Array.isArray(payload.cameras) ? payload.cameras : [];
