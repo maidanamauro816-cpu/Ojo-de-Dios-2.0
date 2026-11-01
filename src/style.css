@@ -643,3 +643,23 @@ footer {
     top: 68px !important;
   }
 }
+
+
+/* Marca y barra inferior de capas */
+.brand-icon { width: 32px; height: 32px; display: inline-flex; color: #e7bd58; filter: drop-shadow(0 0 8px rgba(231,189,88,.55)); }
+.brand-icon svg { width: 100%; height: 100%; }
+:root { --accent-cyan: #d6ad50; --border-cyan: rgba(214,173,80,.30); }
+.layer-dock { position: absolute; z-index: 20; left: 50%; bottom: 38px; transform: translateX(-50%); display: flex; align-items: stretch; gap: 5px; padding: 8px 10px; max-width: calc(100vw - 18px); overflow-x: auto; border: 1px solid rgba(214,173,80,.35); border-radius: 15px; background: rgba(4,9,17,.92); box-shadow: 0 8px 30px rgba(0,0,0,.55), 0 0 18px rgba(214,173,80,.10); backdrop-filter: blur(16px); }
+.dock-item { min-width: 58px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 5px 7px; color: #b9c2ce; background: transparent; border: 1px solid transparent; border-radius: 10px; cursor: pointer; }
+.dock-item span { font-size: 19px; line-height: 1.1; }
+.dock-item small { font-size: 9px; font-weight: 700; white-space: nowrap; }
+.dock-item.active { color: #f5d889; background: rgba(214,173,80,.14); border-color: rgba(214,173,80,.55); box-shadow: inset 0 0 14px rgba(214,173,80,.08), 0 0 12px rgba(214,173,80,.12); }
+@media (max-width: 640px) {
+  .layer-dock { bottom: 38px; width: calc(100vw - 14px); justify-content: flex-start; gap: 2px; padding: 7px 5px; border-radius: 13px; }
+  .dock-item { min-width: 0; flex: 1 0 0; padding: 5px 2px; }
+  .dock-item span { font-size: 18px; }
+  .dock-item small { font-size: 8px; }
+  .panel { bottom: 100px; max-height: 34dvh; }
+  footer { height: 30px; font-size: 8px; }
+  .status-right { display: none; }
+}
