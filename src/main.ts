@@ -1,5 +1,6 @@
 import { twoline2satrec, propagate, gstime, eciToGeodetic, degreesLat, degreesLong } from 'satellite.js';
 import { createCctvLayer } from './layers/cctv/cctvLayer.js';
+import { createSatelliteLayer } from './layers/satellites/satelliteLayer.js';
 
 declare const Cesium: any;
 
@@ -109,6 +110,7 @@ viewer.camera.setView({
 // CCTV Mesh: public government traffic cameras only. Catalogs and frames are
 // fetched through the bounded same-origin Node proxy, never directly by Cesium.
 const cctvLayer = createCctvLayer({ viewer, Cesium, container: $('camera-tools') });
+const globalSatelliteLayer = createSatelliteLayer({ viewer, Cesium, statusElement: $('satellite-status-pill') });
 
 // Optional Cesium ion Photorealistic 3D Tiles. Use a restricted ion token in
 // VITE_CESIUM_ION_TOKEN; without it the existing globe imagery remains active.
@@ -769,6 +771,7 @@ document.querySelectorAll('[data-layer]').forEach((btn) => {
       btn.classList.toggle('active', layerStates.satellites);
       btn.querySelector('.layer-state')!.textContent = layerStates.satellites ? 'ON' : 'OFF';
       updateSatellites();
+      globalSatelliteLayer.setEnabled(layerStates.satellites);
     } else if (layer === 'haarp') {
       layerStates.haarp = !layerStates.haarp;
       haarp.show = layerStates.haarp;

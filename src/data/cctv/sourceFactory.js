@@ -40,7 +40,7 @@ export function createJsonCameraSource(config) {
           isPublic: true,
           region: config.region,
           license: config.license || 'Condiciones de reutilización pendientes de verificar',
-          licenseStatus: 'unverified'
+          licenseStatus: config.verified === true ? 'verified' : 'unverified'
         }
       };
     },

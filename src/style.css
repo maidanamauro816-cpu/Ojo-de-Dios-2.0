@@ -712,3 +712,27 @@ footer { display:none !important; }
   .dock-item span { font-size:20px !important; }
   .dock-item small { font-size:8px !important; }
 }
+
+
+/* Compact orbital catalog status; keeps the 3D globe unobstructed. */
+.satellite-status-pill {
+  position: fixed;
+  z-index: 30;
+  left: 50%;
+  bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100vw - 24px);
+  padding: 8px 13px;
+  border: 1px solid rgba(242, 200, 91, .55);
+  border-radius: 999px;
+  background: rgba(3, 8, 18, .88);
+  color: #f2c85b;
+  box-shadow: 0 0 18px rgba(242, 200, 91, .18);
+  font: 700 10px/1.35 system-ui, sans-serif;
+  letter-spacing: .035em;
+  text-align: center;
+  pointer-events: none;
+  backdrop-filter: blur(12px);
+}
+.satellite-status-pill[hidden] { display: none !important; }
