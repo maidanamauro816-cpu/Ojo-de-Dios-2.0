@@ -1,4 +1,6 @@
 import { twoline2satrec, propagate, gstime, eciToGeodetic, degreesLat, degreesLong } from 'satellite.js';
+import { Capacitor } from '@capacitor/core';
+import { LocalNotifications } from '@capacitor/local-notifications';
 import { createCctvLayer } from './layers/cctv/cctvLayer.js';
 import { createSatelliteLayer } from './layers/satellites/satelliteLayer.js';
 import { createMarineLayer } from './layers/marine/marineLayer.js';
@@ -129,6 +131,44 @@ const naturalEventsLayer = new NaturalEventsLayer(viewer, (state: any) => {
   const el = $('natural-status'); if (!el) return;
   el.textContent = state.loading ? 'Consultando NASA EONET…' : state.error ? state.error : state.count + ' eventos naturales · NASA';
 });
+
+// Permisos y canales Android para avisos visibles en la barra de notificaciones.
+async function configureDisasterNotifications() {
+  if (!Capacitor.isNativePlatform()) return;
+  try {
+    let permission = await LocalNotifications.checkPermissions();
+    if (permission.display !== 'granted') permission = await LocalNotifications.requestPermissions();
+    if (permission.display !== 'granted') {
+      hint.textContent = 'Las alertas están disponibles, pero Android no tiene permiso para mostrarlas. Activá Notificaciones en los ajustes del teléfono.';
+      return;
+    }
+    await LocalNotifications.createChannel({
+      id: 'sismos-live', name: 'Sismos y terremotos',
+      description: 'Avisos de actividad sísmica importante', importance: 5, vibration: true
+    });
+    await LocalNotifications.createChannel({
+      id: 'desastres-live', name: 'Fenómenos naturales',
+      description: 'Tormentas, incendios, inundaciones y ciclones', importance: 4, vibration: true
+    });
+    await LocalNotifications.addListener('localNotificationActionPerformed', (event) => {
+      const extra = event.notification?.extra || {};
+      const lat = Number(extra.lat), lon = Number(extra.lon);
+      if (Number.isFinite(lat) && Number.isFinite(lon)) {
+        viewer.camera.flyTo({
+          destination: Cesium.Cartesian3.fromDegrees(lon, lat, 550000),
+          duration: 2
+        });
+      }
+    });
+    const el = $('alerts-status');
+    if (el) el.textContent = 'PERMISOS ACTIVOS · revisión periódica Android';
+  } catch (error) {
+    console.warn('No se pudieron configurar las notificaciones:', error);
+    const el = $('alerts-status');
+    if (el) el.textContent = 'No se pudieron activar las notificaciones';
+  }
+}
+configureDisasterNotifications();
 
 // Optional Cesium ion Photorealistic 3D Tiles. Use a restricted ion token in
 // VITE_CESIUM_ION_TOKEN; without it the existing globe imagery remains active.
