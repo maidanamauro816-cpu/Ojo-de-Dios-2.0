@@ -667,3 +667,48 @@ footer {
 
 /* CCTV Mesh panel */
 .cctv-panel{position:relative;z-index:20;margin:10px 12px 12px;padding:12px;border:1px solid rgba(244,201,93,.28);border-radius:12px;background:rgba(3,10,19,.94);color:#e8eef7;max-height:42vh;overflow:auto;font:12px/1.45 system-ui,sans-serif}.cctv-head,.cctv-actions{display:flex;align-items:center;justify-content:space-between;gap:8px}.cctv-head strong{color:#f4d47a;letter-spacing:.06em}.cctv-head span,.cctv-region small{color:#91a3b8;font-size:10px}.cctv-actions{justify-content:flex-start;margin:10px 0}.cctv-actions .mini-btn{border:1px solid rgba(244,201,93,.35);background:#111d2b;color:#f4d47a;border-radius:7px;padding:7px 9px}.cctv-actions .mini-btn.active{background:#244638;border-color:#30d69a;color:#b6ffe1}.cctv-region-title{margin:10px 0 5px;color:#8ea1b8;font-size:10px;letter-spacing:.12em}.cctv-regions{display:grid;grid-template-columns:1fr 1fr;gap:5px}.cctv-region{display:flex;align-items:center;gap:6px;padding:5px 7px;border-radius:6px;background:rgba(255,255,255,.045);font-size:11px}.cctv-region input{accent-color:#e8c35c}.cctv-region span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cctv-details{margin-top:9px;padding:9px;border-left:2px solid #e8c35c;background:rgba(255,255,255,.045);display:grid;gap:4px;font-size:11px}.cctv-detail-title{font-weight:700;color:#f4d47a}.cctv-license{color:#a9b9ca}.cctv-panel[hidden]{display:none}@media(max-width:700px){.cctv-panel{max-height:34vh;margin:6px 8px;padding:9px}.cctv-regions{grid-template-columns:1fr 1fr}.cctv-actions .mini-btn{padding:7px 6px;font-size:10px}}
+
+
+/* OJO DE DIOS 2.0 — vista móvil inmersiva: globo completo + barra inferior */
+html, body, #app { width:100%; height:100%; min-height:100%; overflow:hidden; }
+#globe { position:fixed; inset:0; width:100vw; height:100dvh; z-index:1; }
+.topbar { display:none !important; }
+#main-panel { display:none !important; }
+footer { display:none !important; }
+.cesium-viewer-toolbar { display:none !important; }
+.cesium-viewer-bottom { bottom:calc(72px + env(safe-area-inset-bottom)) !important; left:8px !important; }
+.layer-dock {
+  position:fixed !important;
+  z-index:1000 !important;
+  left:0 !important; right:0 !important; bottom:0 !important;
+  transform:none !important;
+  width:100% !important; max-width:none !important;
+  min-height:66px;
+  padding:7px 8px calc(7px + env(safe-area-inset-bottom)) !important;
+  display:flex !important; flex-direction:row !important;
+  align-items:center !important; justify-content:space-around !important;
+  gap:3px !important; overflow-x:auto; overflow-y:hidden;
+  border:0 !important; border-top:1px solid rgba(214,173,80,.42) !important;
+  border-radius:0 !important;
+  background:rgba(3,8,16,.96) !important;
+  box-shadow:0 -8px 28px rgba(0,0,0,.42),0 0 16px rgba(214,173,80,.08) !important;
+  backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+}
+.dock-item {
+  flex:1 1 0 !important; min-width:0 !important; min-height:48px;
+  display:flex !important; flex-direction:column !important;
+  align-items:center !important; justify-content:center !important;
+  gap:3px !important; padding:4px 2px !important;
+  border-radius:9px !important;
+}
+.dock-item span { font-size:21px !important; line-height:1.1; }
+.dock-item small { font-size:9px !important; line-height:1.1; }
+.dock-item.active { background:rgba(214,173,80,.16) !important; }
+.cesium-viewer, .cesium-widget, .cesium-widget canvas {
+  width:100% !important; height:100% !important;
+}
+@media (max-width:640px) {
+  .layer-dock { min-height:70px; }
+  .dock-item span { font-size:20px !important; }
+  .dock-item small { font-size:8px !important; }
+}
