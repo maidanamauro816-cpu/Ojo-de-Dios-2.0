@@ -2,7 +2,7 @@ import { createJsonCameraSource } from './sourceFactory.js';
 
 export const ItaliaAutostradeSource = createJsonCameraSource({
   id: 'it-autostrade',
-  name: 'Italia - Autostrade per l'Italia',
+  name: "Italia - Autostrade per l'Italia",
   region: 'IT',
   catalogUrl: 'https://www.autostrade.it/api/cctv/list',
   allowedHosts: ['autostrade.it', 'www.autostrade.it'],
