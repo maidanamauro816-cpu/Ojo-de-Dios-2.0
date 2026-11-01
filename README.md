@@ -2,6 +2,8 @@
 
 Globo terráqueo 3D construido con CesiumJS. Las capas se activan desde el dock inferior.
 
+> Rama de integración: se utiliza para adaptar módulos avanzados del proyecto GODS-EYE sin modificar los repositorios originales ni la rama principal. Se conserva la identidad visual y la configuración Android de Ojo de Dios 2.0.
+
 - 🛰️ Catálogo mundial de satélites activos de CelesTrak en OMM JSON, incluyendo identificadores NORAD modernos de 6+ dígitos. Las posiciones se calculan con SGP4 usando satellite.js; no son detecciones de radar. El catálogo se conserva en IndexedDB y se actualiza respetando la ventana de 2 horas de CelesTrak.
 - 🛰️ ISS, Tiangong y Hubble como objetos destacados.
 - ✈️ Tráfico aéreo comercial en vivo (ADS-B público, vía adsb.lol) con ficha de cada vuelo.
