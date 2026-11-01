@@ -369,11 +369,11 @@ if (ionToken) {
 
 // Layer state tracking
 const layerStates: Record<string, boolean> = {
-  iss: true,
+  iss: false,
   satellites: false,
-  haarp: true,
-  strategic: true,
-  military: true,
+  haarp: false,
+  strategic: false,
+  military: false,
   flights: false,
   ships: false,
   cameras: false,
@@ -1097,14 +1097,16 @@ document.querySelectorAll<HTMLElement>('[data-shortcut-layer]').forEach((shortcu
     if (!target) return;
 
     const currentlyEnabled = layer === 'cameras' ? layerStates.cameras : Boolean(layerStates[layer]);
-    const liveLayers = ['iss', 'satellites', 'flights', 'ships', 'cameras'];
-    if (!currentlyEnabled && liveLayers.includes(layer)) {
-      liveLayers.filter((other) => other !== layer).forEach((other) => {
-        const active = other === 'cameras' ? layerStates.cameras : Boolean(layerStates[other]);
+    const exclusiveLayers = ['iss', 'satellites', 'flights', 'ships', 'cameras', 'military', 'earthquakes', 'weather', 'natural', 'clouds', 'precipitation'];
+    if (!currentlyEnabled) {
+      exclusiveLayers.filter((other) => other !== layer).forEach((other) => {
+        const active = Boolean(layerStates[other]);
         if (active) document.querySelector<HTMLElement>(`#main-panel [data-layer="${other}"]`)?.click();
       });
     }
     target.click();
+    const envMenu = document.getElementById('environment-dock');
+    if (envMenu) envMenu.hidden = ['earthquakes','weather','natural','clouds','precipitation'].includes(layer) ? false : true;
 
     document.querySelectorAll<HTMLElement>('[data-shortcut-layer]').forEach((item) => {
       const key = item.dataset.shortcutLayer || '';
@@ -1114,6 +1116,16 @@ document.querySelectorAll<HTMLElement>('[data-shortcut-layer]').forEach((shortcu
     });
   });
 });
+
+const environmentToggle = document.getElementById('environment-dock-toggle');
+if (environmentToggle) {
+  environmentToggle.addEventListener('click', () => {
+    const menu = document.getElementById('environment-dock');
+    if (!menu) return;
+    menu.hidden = !menu.hidden;
+    environmentToggle.setAttribute('aria-expanded', String(!menu.hidden));
+  });
+}
 
 // Search and radius controls
 if (flightFilter) {
