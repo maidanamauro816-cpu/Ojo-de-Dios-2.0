@@ -54,8 +54,14 @@ export class GlobalWeatherLayer {
     next.alpha = kind === 'clouds' ? 0.68 : 0.78;
     next.show = true;
     if (oldLayer) this.viewer.imageryLayers.remove(oldLayer, true);
-    if (kind === 'clouds') this.clouds = next;
-    else this.precipitation = next;
+    if (kind === 'clouds') {
+      this.clouds = next;
+      // Keep precipitation above the cloud image when both are enabled.
+      if (this.precipitation) this.viewer.imageryLayers.lower(next);
+    } else {
+      this.precipitation = next;
+      this.viewer.imageryLayers.raiseToTop(next);
+    }
     this.onStatus({
       clouds: Boolean(this.clouds),
       precipitation: Boolean(this.precipitation),
