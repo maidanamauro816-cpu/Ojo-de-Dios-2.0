@@ -82,9 +82,15 @@ html, body, #app {
 }
 
 .brand-icon {
-  color: var(--accent-cyan);
+  color: #f2c85b;
   font-size: 20px;
-  filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.6));
+}
+
+.brand-icon img {
+  display: block;
+  width: 34px;
+  height: 34px;
+  filter: drop-shadow(0 0 8px rgba(242, 200, 91, 0.45));
 }
 
 .brand .accent {
