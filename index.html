@@ -22,7 +22,7 @@
     <header class="topbar">
       <div class="brand-group">
         <div class="brand">
-          <span class="brand-icon">⬡</span>
+          <span class="brand-icon" aria-label="Emblema del ojo"><svg viewBox="0 0 48 48" role="img"><path d="M24 3 44 40H4L24 3Z" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M9 25Q24 9 39 25Q24 41 9 25Z" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="24" cy="25" r="5" fill="currentColor"/><path d="M24 3v7" stroke="currentColor" stroke-width="2"/></svg></span>
           OJO DE DIOS <span class="accent">2.0</span>
         </div>
         <div class="subtitle">SISTEMA GEOESPACIAL DE INTELIGENCIA GLOBAL</div>
@@ -176,13 +176,25 @@
         </div>
       </div>
 
+      <div id="camera-tools" class="marine-tools" hidden><div class="marine-card"><div class="marine-card-title">📷 VISOR DE CÁMARAS AUTORIZADAS</div><p>Esta capa permite incorporar cámaras propias o fuentes públicas oficiales que autoricen expresamente su retransmisión.</p><small class="muted">No busca ni muestra cámaras privadas expuestas en Internet. La conexión RTSP/HTTPS se configura con la URL y credenciales del propietario.</small></div></div>
+
       <!-- Contextual Hint Banner -->
       <div class="hint" id="hint">
         Arrastrá el cursor o dedo para rotar la Tierra. Usá la rueda o pellizco para zoom. Activá TRÁFICO AÉREO para desplegar aeronaves ADS-B en vivo.
       </div>
     </aside>
 
-    <!-- Bottom Status Bar -->
+
+    <!-- Barra inferior de capas rápidas -->
+    <nav class="layer-dock" aria-label="Capas del globo">
+      <button type="button" class="dock-item" data-shortcut-layer="satellites"><span>🛰️</span><small>Satélites</small></button>
+      <button type="button" class="dock-item" data-shortcut-layer="ships"><span>🚢</span><small>Barcos</small></button>
+      <button type="button" class="dock-item" data-shortcut-layer="flights"><span>✈️</span><small>Aviones</small></button>
+      <button type="button" class="dock-item" data-shortcut-layer="satellites"><span>🚀</span><small>Naves</small></button>
+      <button type="button" class="dock-item" data-shortcut-layer="military"><span>🛡️</span><small>Bases</small></button>
+      <button type="button" class="dock-item" data-shortcut-layer="cameras"><span>📷</span><small>Cámaras</small></button>
+    </nav>
+\n    <!-- Bottom Status Bar -->
     <footer>
       <div class="status-left">
         <span class="status-dot"></span>
