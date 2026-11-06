@@ -264,10 +264,21 @@ async function getFrame(request, rawId) {
 
 
 
-async function getSatelliteCatalog(request) {
-  const cacheKey = new Request(new URL('/__cache/satellite-active-omm-v1', request.url));
+// Solo se aceptan grupos conocidos de CelesTrak: el Worker no actúa como proxy abierto.
+const SATELLITE_GROUPS = new Set([
+  'active', 'stations', 'starlink', 'oneweb', 'iridium-NEXT', 'gps-ops', 'glo-ops', 'galileo', 'beidou',
+  'weather', 'resource', 'geo', 'science', 'military', 'radar', 'amateur', 'cubesat', 'planet', 'spire',
+  'last-30-days', 'cosmos-2251-debris', 'iridium-33-debris', 'fengyun-1c-debris', 'cosmos-1408-debris'
+]);
+
+async function getSatelliteCatalog(request, group = 'active') {
+  if (!SATELLITE_GROUPS.has(group)) return json({ error: 'Grupo orbital no permitido' }, 400);
+  const upstreamUrl = group === 'active'
+    ? CELESTRAK_ACTIVE
+    : `https://celestrak.org/NORAD/elements/gp.php?GROUP=${encodeURIComponent(group)}&FORMAT=JSON`;
+  const cacheKey = new Request(new URL(`/__cache/satellite-${group}-omm-v1`, request.url));
   return cachedFetch(cacheKey, SATELLITE_TTL, async () => {
-    const upstream = await fetch(CELESTRAK_ACTIVE, {
+    const upstream = await fetch(upstreamUrl, {
       method: 'GET',
       redirect: 'manual',
       headers: { 'Accept': 'application/json', 'User-Agent': 'OjoDeDios/2.0 public orbital catalog' }
@@ -355,6 +366,8 @@ export default {
     if (request.method !== 'GET') return json({ error: 'Método no permitido' }, 405);
     try {
       if (url.pathname === '/api/satellites/active') return await getSatelliteCatalog(request);
+      const groupMatch = /^\/api\/satellites\/group\/([^/]+)$/.exec(url.pathname);
+      if (groupMatch) return await getSatelliteCatalog(request, decodeURIComponent(groupMatch[1]));
       if (url.pathname === '/api/ais-stream') return await getAisStream(request, env);
       if (url.pathname === '/api/cctv/catalog') return await getCatalog(request);
       const match = /^\/api\/cctv-frame\/([^/]+)$/.exec(url.pathname);

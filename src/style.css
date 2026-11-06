@@ -760,6 +760,13 @@ footer { display:none !important; }
 }
 #main-panel > * {pointer-events:auto}
 #main-panel > .panel-header,#main-panel > .layers-container,#main-panel > .hint {display:none!important}
+.sat-head {display:flex; flex-direction:column; gap:2px; padding:10px 12px 6px}
+.sat-groups {display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:2px 10px; padding:0 12px 10px}
+.sat-group {display:flex; align-items:center; gap:7px; padding:5px 0; font-size:12px; color:#cbd5e1; cursor:pointer; touch-action:manipulation}
+.sat-group input {accent-color:#d6ad50}
+.sat-swatch {width:9px; height:9px; border-radius:50%; flex:none}
+.sat-group-name {flex:1; min-width:0}
+.sat-group-count {color:#64748b; font-variant-numeric:tabular-nums}
 #main-panel .cctv-panel,#main-panel .flight-tools,#main-panel .marine-tools {
  width:100%!important; max-height:min(38dvh,320px)!important; margin:0 0 8px!important;
  overflow:auto!important; border:1px solid rgba(214,173,80,.55)!important;

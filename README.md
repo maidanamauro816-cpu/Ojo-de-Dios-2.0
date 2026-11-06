@@ -3,6 +3,7 @@
 Globo terráqueo 3D construido con CesiumJS. Las capas se activan desde el dock inferior.
 
 - 🛰️ Catálogo mundial de satélites activos de CelesTrak en OMM JSON, incluyendo identificadores NORAD modernos de 6+ dígitos. Las posiciones se calculan con SGP4 usando satellite.js; no son detecciones de radar. El catálogo se conserva en IndexedDB y se actualiza respetando la ventana de 2 horas de CelesTrak.
+- 🛰️ Los satélites se organizan en capas conmutables por grupo de CelesTrak (estaciones, Starlink, OneWeb, Iridium, GPS, GLONASS, Galileo, BeiDou, meteorológicos, observación de la Tierra, geoestacionarios, científicos, militares públicos, radioaficionados, CubeSats, restos conocidos y lanzados en los últimos 30 días). Un satélite que está en varias capas se dibuja una sola vez. El Worker solo reenvía grupos de una lista permitida.
 - 🛰️ ISS, Tiangong y Hubble como objetos destacados.
 - ✈️ Tráfico aéreo comercial en vivo (ADS-B público, vía adsb.lol) con ficha de cada vuelo.
 - 🪖 Bases militares, navales y aéreas de ubicación públicamente documentada (solo nombre y posición; sin feeds en vivo).

@@ -188,6 +188,11 @@
 
       <section id="camera-tools" class="cctv-panel" hidden aria-label="Cámaras públicas de tránsito"><div class="cctv-head"><strong>📷 CCTV MESH · FUENTES OFICIALES</strong><span id="cctv-status">Desactivado</span></div><div class="cctv-actions"><button type="button" id="cctv-nearest" class="mini-btn">◎ NEAREST</button><button type="button" id="cctv-viewshed" class="mini-btn" aria-pressed="false">◉ VIEWSHED</button><button type="button" id="cctv-reload" class="mini-btn">↻ Actualizar</button></div><div class="cctv-region-title">REGIONES</div><div id="cctv-regions" class="cctv-regions"></div><div id="cctv-details" class="cctv-details">Seleccioná una cámara para ver su ficha y calibrar su orientación.</div><small class="muted">Solo snapshots públicos de tráfico. Las orientaciones y volúmenes de cobertura son estimaciones editables, no vigilancia certificada. La disponibilidad y licencia se verifican por fuente.</small></section>
 
+      <section id="satellite-tools" class="marine-tools sat-panel" data-sat-panel hidden aria-label="Capas de satélites">
+        <div class="sat-head"><strong>🛰️ CAPAS ORBITALES · CELESTRAK</strong><small class="muted">Posiciones calculadas con SGP4 desde elementos públicos</small></div>
+        <div id="satellite-groups" class="sat-groups"></div>
+      </section>
+
       <!-- Contextual Hint Banner -->
       <div class="hint" id="hint">
         Arrastrá el cursor o dedo para rotar la Tierra. Usá la rueda o pellizco para zoom. Activá TRÁFICO AÉREO para desplegar aeronaves ADS-B en vivo.
