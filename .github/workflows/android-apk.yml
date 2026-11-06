@@ -31,6 +31,8 @@ jobs:
 
       - name: Install Ojo de Dios launcher icon
         run: node scripts/install-android-icon.mjs
+      - name: Declare Android location permissions
+        run: node scripts/add-android-permissions.mjs
       - name: Sync Capacitor
         run: npx cap sync android
       - name: Build debug APK

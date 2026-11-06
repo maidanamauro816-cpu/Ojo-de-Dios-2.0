@@ -778,3 +778,4 @@ footer { display:none !important; }
 .layer-dock {z-index:50!important; pointer-events:auto!important}
 .layer-dock .dock-item {touch-action:manipulation}
 .satellite-status-pill {z-index:25!important; bottom:calc(84px + env(safe-area-inset-bottom))!important}
+.location-pill {bottom:calc(122px + env(safe-area-inset-bottom))!important; pointer-events:auto!important; cursor:pointer; touch-action:manipulation}

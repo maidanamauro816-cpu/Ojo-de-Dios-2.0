@@ -1,6 +1,7 @@
 import { twoline2satrec, propagate, gstime, eciToGeodetic, degreesLat, degreesLong } from 'satellite.js';
 import { createCctvLayer } from './layers/cctv/cctvLayer.js';
 import { createSatelliteLayer } from './layers/satellites/satelliteLayer.js';
+import { createLocationLayer } from './layers/location/locationLayer.js';
 import { createMarineLayer } from './layers/marine/marineLayer.js';
 
 declare const Cesium: any;
@@ -114,6 +115,17 @@ const cctvApiBase = (import.meta as any).env?.VITE_CCTV_API_BASE || '';
 const cctvLayer = createCctvLayer({ viewer, Cesium, container: $('camera-tools'), apiBase: cctvApiBase });
 const globalSatelliteLayer = createSatelliteLayer({ viewer, Cesium, apiBase: cctvApiBase, statusElement: $('satellite-status-pill'), groupsContainer: $('satellite-groups') });
 const marineLayer = createMarineLayer({ viewer, Cesium, apiBase: cctvApiBase, statusElement: $('marine-status-pill') });
+
+// GPS del dispositivo: botón "Mi ubicación" del dock, con seguimiento en vivo.
+const locationLayer = createLocationLayer({ viewer, Cesium, statusElement: $('location-status-pill') });
+const locationButton = document.getElementById('dock-location');
+locationLayer.onChange((active) => {
+  locationButton?.classList.toggle('active', active);
+  locationButton?.setAttribute('aria-pressed', String(active));
+});
+locationButton?.addEventListener('click', () => {
+  locationLayer.toggle();
+});
 
 // Optional Cesium ion Photorealistic 3D Tiles. Use a restricted ion token in
 // VITE_CESIUM_ION_TOKEN; without it the existing globe imagery remains active.

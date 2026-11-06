@@ -61,6 +61,7 @@
     <section id="globe" aria-label="Globo terráqueo 3D interactivo"></section>
     <div id="satellite-status-pill" class="satellite-status-pill" role="status" aria-live="polite" hidden></div>
     <div id="marine-status-pill" class="satellite-status-pill" role="status" aria-live="polite" hidden></div>
+    <div id="location-status-pill" class="satellite-status-pill location-pill" role="status" aria-live="polite" title="Tocá para centrar el globo en tu ubicación" hidden></div>
 
     <!-- Sidebar Control Intelligence Panel -->
     <aside class="panel" id="main-panel">
@@ -202,6 +203,7 @@
 
     <!-- Barra inferior de capas rápidas -->
     <nav class="layer-dock" aria-label="Capas del globo">
+      <button type="button" class="dock-item" id="dock-location" aria-pressed="false" title="Mi ubicación (GPS en vivo)"><span>📍</span><small>Mi ubicación</small></button>
       <button type="button" class="dock-item" data-shortcut-layer="satellites"><span>🛰️</span><small>Satélites</small></button>
       <button type="button" class="dock-item" data-shortcut-layer="ships"><span>🚢</span><small>Barcos</small></button>
       <button type="button" class="dock-item" data-shortcut-layer="flights"><span>✈️</span><small>Aviones</small></button>
